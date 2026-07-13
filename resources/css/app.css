@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+@import 'vis-network/styles/vis-network.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Telkom University brand palette — lihat docs/PRD.md §7 */
+    --color-telu-red: #9f1521;
+    --color-telu-red-deep: #ac000f;
+    --color-telu-red-bright: #c51626;
+    --color-telu-red-dark: #8f131e;
+    --color-telu-navy: #002147;
+
+    /* Neutral text & surface, hasil inspeksi telkomuniversity.ac.id */
+    --color-telu-ink: #222222;
+    --color-telu-body: #444444;
+    --color-telu-muted: #666666;
+    --color-telu-border: #d0d6dd;
+    --color-telu-border-soft: #d9d6d6;
+    --color-telu-bg-soft: #f9f9f9;
+    --color-telu-bg-soft-2: #f5f5f5;
+
+    /* Research group functional colors, dipertahankan dari prototype Streamlit */
+    --color-rg-citi: #ff6b6b;
+    --color-rg-dsis: #6bcb77;
+    --color-rg-seal: #4d96ff;
+    --color-rg-unknown: #9e9e9e;
+}
+
+/* Alpine.js: sembunyikan elemen x-cloak sampai Alpine selesai inisialisasi */
+[x-cloak] {
+    display: none !important;
+}
+
+/*
+ * Kartu standar — datar, garis tipis, tanpa efek "lift" saat hover.
+ * (Sebelumnya ada translateY + box-shadow membesar saat hover; dihapus
+ * karena itu pola dekoratif generik yang tidak menambah fungsi.)
+ */
+.card-premium {
+    background: #ffffff;
+    border: 1px solid var(--color-telu-border);
+    border-radius: 0.5rem;
+}
+
+.glow-red:hover {
+    box-shadow: 0 0 20px 2px rgba(159, 21, 33, 0.1);
+}
+
+.glow-navy:hover {
+    box-shadow: 0 0 20px 2px rgba(0, 33, 71, 0.15);
+}
