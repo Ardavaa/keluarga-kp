@@ -22,8 +22,9 @@ Roadmap ini melengkapi [PRD.md](./PRD.md). Setiap fase dipecah jadi **sub-fase b
 | 4 | Halaman Inti | ✅ Selesai (4/4 sub-fase) |
 | 5 | Visualisasi Lanjutan | ✅ Selesai (3/3 sub-fase) |
 | 6 | Filter Global & Export | ✅ Selesai (3/3 sub-fase) |
-| 7 | Integrasi Data Real (Scraper) | ⬜ 0/4 sub-fase (keputusan 7.1 masih tertunda) — sudah ada trial import identitas dosen dari spreadsheet, lihat catatan di Fase 7 |
-| 8 | Polish, QA & Serah Terima | ⬜ 0/5 sub-fase |
+| 7 | Integrasi Data Real (Scraper → MySQL) | ⬜ 0/5 sub-fase (menunggu prasyarat infra MySQL & penyesuaian repo scraper) — sudah ada trial import identitas dosen dari spreadsheet, lihat catatan di Fase 7 |
+| 8 | Auth & Panel Admin | ⬜ 0/4 sub-fase |
+| 9 | Polish, QA & Serah Terima | ⬜ 0/5 sub-fase |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ Terblokir
 
@@ -46,7 +47,7 @@ Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ 
 
 ### 0.5 Keputusan & housekeeping repo
 - [x] Tambahkan `CLAUDE.md`/`AGENT.md`/`AGENTS.md`/`.claude/` ke `.gitignore` di kedua repo
-- [x] Putuskan arsitektur data tingkat tinggi: Opsi A (koneksi langsung) + PostgreSQL murni (bukan Supabase)
+- [x] Putuskan arsitektur data tingkat tinggi: **satu database MySQL** dipakai bersama scraper & dashboard, sumber data **Scopus**, koreksi Admin dengan penanda override per field (lihat `docs/PRD.md` §4)
 
 ---
 
@@ -68,7 +69,7 @@ Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ 
 - [x] Verifikasi komponen `x-show`/`x-on:click` toggle berfungsi (dicek lewat browser preview: `display: none` → `inline` setelah klik)
 
 ### 1.4 Environment & konfigurasi ✅
-- [x] `.env.example` disiapkan (APP_NAME disesuaikan, catatan DB sementara SQLite → PostgreSQL di Fase 7 ditambahkan sebagai komentar)
+- [x] `.env.example` disiapkan (APP_NAME disesuaikan, catatan DB sementara SQLite → MySQL saat integrasi Fase 7 ditambahkan sebagai komentar)
 - [x] `.gitignore` bawaan Laravel digabung dengan entri custom yang sudah ada (`CLAUDE.md`/`AGENT.md`/`AGENTS.md`/`.claude/`)
 
 ### 1.5 Dokumentasi setup ✅
@@ -119,7 +120,9 @@ Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ 
 
 ## Fase 3 — Data Layer Sementara (Migration + Seeder Dummy) ✅
 
-> Tujuan akhir fase: tim bisa mengembangkan UI tanpa menunggu keputusan integrasi scraper (lihat PRD §4 & Fase 7). Skema dibuat **identik** dengan skema Python supaya nanti tinggal disambungkan.
+> Tujuan akhir fase: tim bisa mengembangkan UI tanpa menunggu keputusan integrasi scraper (lihat PRD §4 & Fase 7). Skema dibuat **identik** dengan skema tabel relasional scraper supaya nanti tinggal disambungkan.
+>
+> **Catatan penyesuaian (arsitektur final):** target database final adalah **MySQL tunggal** (lihat `docs/PRD.md` §4). Struktur tabel relasional di fase ini tetap berlaku di MySQL — kolom JSON tinggal memakai tipe `JSON` MySQL, cast `array` Eloquent tetap sama. Dua hal dari skema prototipe lama yang **tidak lagi relevan**: (1) tabel `embeddings`/kolom vector `pgvector` sudah tidak dipakai (rekomendasi dihitung in-memory di sisi scraper, hanya hasil akhir disimpan); (2) kolom `sinta_metrics` tetap ada sebagai nama historis, tapi isinya kini murni metrik sitasi dari **Scopus** (bukan SINTA).
 
 ### 3.1 Migration tabel inti ✅
 - [x] `lecturers` — 27 kolom persis sesuai `schema.sql` (identitas, metrik SINTA per platform, `ai_categories`/`sinta_metrics` sebagai kolom JSON dengan default `[]`/`{}`), unique constraint di `code`. Tidak pakai `timestamps()` Laravel karena tabel asal tidak punya kolom itu
@@ -259,28 +262,35 @@ Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ 
 
 ---
 
-## Fase 7 — Integrasi Data Real (Scraper) ⛔ Menunggu Keputusan Tim
+## Fase 7 — Integrasi Data Real (Scraper) ⛔ Menunggu Prasyarat
 
-> Fase ini sengaja dipisah dan ditunda: mekanisme integrasi (otomatis live-connect vs input/import manual) belum diputuskan.
+> Arsitektur sudah ditetapkan (lihat `docs/PRD.md` §4): **satu database MySQL** dipakai bersama scraper & dashboard. Scraper menulis langsung ke MySQL, Laravel membaca dari DB yang sama. Fase ini menunggu prasyarat infra (instance MySQL bersama tersedia) dan penyesuaian di repo scraper.
 
-### 7.1 Keputusan tim
-- [ ] Dashboard connect langsung (live) ke DB PostgreSQL yang sama dipakai scraper, ATAU data di-export/import manual secara berkala? — **belum diputuskan final oleh tim**, lihat "Trial Import" di bawah untuk langkah sementara yang sudah diambil
+### 7.1 Prasyarat infra & repo scraper
+- [ ] Instance **MySQL bersama** disiapkan (host disepakati tim — lihat Open Question PRD §11), kredensial dibagikan via `.env` masing-masing
+- [ ] Repo scraper (`Telkom-University-Lecturer-Scraper-and-Dashboard-Prototype`) disesuaikan: driver DB ke MySQL, dan logic penulisan menghormati penanda `is_overridden` per field (§4.3 PRD) — pekerjaan di repo lain, di luar `keluarga-kp`
 
-### 7.2 Implementasi
-- [x] Kalau manual/import: **command import dibuat** (`php artisan import:lecturers {path}`) — lihat "Trial Import" di bawah untuk detail. Belum ditentukan siapa yang menjalankan & kapan secara rutin (masih trial satu kali, bukan proses berkala resmi)
-- [ ] Kalau live-connect: arahkan `.env` Laravel ke instance PostgreSQL scraper, matikan seeder dummy dari Fase 3 — **belum dikerjakan**, menunggu keputusan 7.1
+### 7.2 Implementasi koneksi
+- [ ] Arahkan `.env` Laravel ke instance MySQL bersama, matikan seeder dummy dari Fase 3
+- [ ] Skema MySQL final selaras dengan migration Fase 3 (tanpa `embeddings`/pgvector, `sinta_metrics` diisi metrik Scopus — lihat catatan penyesuaian Fase 3)
+- [x] Referensi historis: command `php artisan import:lecturers {path}` sudah pernah dibuat untuk trial import identitas dosen dari spreadsheet — lihat "Trial Import" di bawah
 
-### 7.3 Validasi
-- [ ] Spot-check beberapa dosen: data di dashboard cocok dengan data asli hasil scraping — *(catatan: yang sudah diverifikasi baru identitas/klasifikasi dari spreadsheet, bukan hasil scraping publikasi/sitasi asli — lihat "Trial Import")*
+### 7.3 Mekanisme koreksi Admin (§4.3 PRD)
+- [ ] Tentukan struktur penyimpanan flag `is_overridden` (kolom per-field vs tabel `lecturer_field_overrides`) — lihat Open Question PRD §11
+- [ ] Pastikan penulisan scraper melewati field yang ditandai override, sehingga koreksi Admin tidak tertimpa
 
-### 7.4 Update dokumentasi
-- [ ] Update PRD §4 & roadmap ini begitu keputusan final diambil
+### 7.4 Validasi
+- [ ] Spot-check beberapa dosen: data di dashboard cocok dengan data asli hasil scraping Scopus
+- [ ] Uji skenario override: Admin koreksi 1 field → jalankan scraper ulang → field itu tidak berubah
+
+### 7.5 Update dokumentasi
+- [ ] Update PRD & roadmap ini begitu integrasi berjalan penuh
 
 ---
 
 ## Trial Import: Data Identitas Dosen dari Spreadsheet (belum final)
 
-> User minta lanjut Fase 7 tanpa keputusan final 7.1 dulu: **"untuk sekarang belum ada keputusan namun sementara import data yang sekarang dahulu untuk cek hasilnya seperti apa"**. Ini BUKAN keputusan 7.1 (live-connect vs import berkala) — cuma eksperimen sekali jalan pakai data yang sudah ada, supaya tim bisa lihat gambaran dashboard dengan roster dosen yang lebih lengkap sebelum memutuskan arsitektur integrasi final.
+> User minta lanjut Fase 7 tanpa integrasi scraper penuh dulu: **"untuk sekarang belum ada keputusan namun sementara import data yang sekarang dahulu untuk cek hasilnya seperti apa"**. Ini BUKAN integrasi final (yang akan menulis langsung ke MySQL dari scraper, lihat PRD §4) — cuma eksperimen sekali jalan pakai data yang sudah ada, supaya tim bisa lihat gambaran dashboard dengan roster dosen yang lebih lengkap.
 
 - [x] **Cek dulu data apa yang benar-benar tersedia**: repo scraper (`Telkom-University-Lecturer-Scraper-and-Dashboard-Prototype`) ternyata **tidak punya** `.env`, dump DB, atau file JSON/CSV hasil scraping tersimpan — folder `data/raw`/`data/json`/`data/cleaned` cuma placeholder kosong. Satu-satunya data nyata yang ada di repo itu adalah `data/input/Keilmuan Dosen FIF.xlsx` — spreadsheet yang sama yang sudah dipakai sebagian (9 dosen sample) di seeder Fase 3.4
 - [x] Spreadsheet ternyata punya **183 dosen unik** di sheet "ALL" (lengkap dengan Prodi/Kelompok Keahlian/JFA/Keilmuan) — jauh lebih banyak dari 9 sample yang dipakai sebelumnya. Sheet1 terpisah (161 baris) punya NIP tapi cuma bisa di-join ke sheet ALL lewat nama (tidak ada kolom ID yang sama di kedua sheet)
@@ -292,7 +302,7 @@ Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ 
 - [x] Diverifikasi lewat browser preview: Dashboard Utama (183 dosen, 28 publikasi — tidak berubah, 20 kategori AI unik, breakdown CITI=49/DSIS=83/SEAL=51), Peta Keahlian & Profil Dosen (183 kartu masing-masing), halaman detail dosen baru (`/dosen/13820075-1`) — semua 200 OK, tidak ada error, waktu load masih wajar (~0.5–1.2 detik, PHP dev server tanpa opcache). `php artisan test` tetap lulus 2/2
 - [x] File sumber `Keilmuan Dosen FIF.xlsx` **sengaja tidak disalin ke dalam repo `keluarga-kp`** — berisi NIP (identifier individu) 183 dosen sungguhan, jadi tidak dikomit ke git untuk menjaga privasi. Command menerima path eksternal sebagai argumen, bukan file bawaan repo
 
-**Yang masih kosong/belum ada** (jujur, bukan bug): publikasi/sitasi/profil tautan/kolaborasi/rekomendasi untuk 174 dosen baru — semua itu perlu data asli hasil scraping yang baru bisa didapat setelah Fase 7.1/7.2 diputuskan & dijalankan sungguhan (live-connect atau proses import berkala dari hasil scraper, bukan cuma spreadsheet identitas).
+**Yang masih kosong/belum ada** (jujur, bukan bug): publikasi/sitasi/profil tautan/kolaborasi/rekomendasi untuk 174 dosen baru — semua itu perlu data asli hasil scraping Scopus yang baru bisa didapat setelah integrasi Fase 7 dijalankan sungguhan (scraper menulis langsung ke MySQL), bukan cuma spreadsheet identitas.
 
 ---
 
@@ -318,19 +328,41 @@ Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ 
 
 ---
 
-## Fase 8 — Polish, QA & Serah Terima
+## Fase 8 — Auth & Panel Admin
 
-### 8.1 Responsif
+> Mengimplementasikan peran Admin (PRD §3.1) untuk mengoreksi data dosen yang dilaporkan salah. UI mengikuti desain dashboard yang sama (PRD §7), bukan template admin terpisah.
+
+### 8.1 Autentikasi
+- [ ] Pasang **Laravel Breeze** (Blade stack), matikan registrasi publik (route register di-disable)
+- [ ] Seeder akun Admin (bukan registrasi publik) — jumlah admin sedikit & terkontrol
+
+### 8.2 Proteksi route
+- [ ] Grup route `/admin` di balik middleware `auth`
+- [ ] Halaman dashboard publik tetap bisa diakses tanpa login
+
+### 8.3 Form koreksi data dosen
+- [ ] Halaman daftar + form edit data dosen (identitas, klasifikasi, metrik) dengan layout & komponen sama dashboard (sidebar, palet TelU, gaya flat)
+- [ ] Saat sebuah field dikoreksi, tandai `is_overridden = true` untuk field itu (mekanisme §4.3 PRD)
+
+### 8.4 Verifikasi
+- [ ] Uji: User tanpa login tidak bisa akses `/admin`; Admin bisa login & menyimpan koreksi
+- [ ] Uji: field yang dikoreksi Admin tidak tertimpa saat data scraper diperbarui (bergantung Fase 7.3)
+
+---
+
+## Fase 9 — Polish, QA & Serah Terima
+
+### 9.1 Responsif
 - [ ] Cek layar desktop 1280–1440px minimal, idealnya tablet
 
-### 8.2 Lintas browser
+### 9.2 Lintas browser
 - [ ] Cek Chrome, Edge, Firefox minimal
 
-### 8.3 Review UI/UX
+### 9.3 Review UI/UX
 - [ ] Bandingkan dengan referensi desain Telkom University (PRD §7)
 
-### 8.4 Dokumentasi akhir
+### 9.4 Dokumentasi akhir
 - [ ] Sinkronkan README/PRD/roadmap dengan kondisi final proyek
 
-### 8.5 Demo & serah terima
+### 9.5 Demo & serah terima
 - [ ] Demo ke Satgas AI FIF
