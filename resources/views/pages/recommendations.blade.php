@@ -27,15 +27,15 @@
                         $init1 = collect(explode(' ', $rec->lecturer->name))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->join('');
                         $init2 = collect(explode(' ', $rec->recommendedLecturer->name))->take(2)->map(fn($w) => strtoupper(substr($w, 0, 1)))->join('');
                     @endphp
-                    <div class="group card-premium relative flex flex-col justify-between bg-white p-6 shadow-sm border border-telu-border/30 hover:border-telu-red/20 overflow-hidden h-full">
-                        <!-- Red top accent glowing bar -->
-                        <div class="absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-transparent via-telu-red/30 to-transparent transition-all duration-300 group-hover:via-telu-red"></div>
+                    <div class="group card-premium relative flex flex-col justify-between bg-white p-6 border border-telu-border hover:border-telu-red/50 overflow-hidden h-full">
+                        <!-- Red top accent bar -->
+                        <div class="absolute left-0 right-0 top-0 h-1 bg-telu-red"></div>
                         
                         <div>
                             <!-- Header with score -->
                             <div class="flex items-center justify-between pb-4 border-b border-telu-border/10">
                                 <span class="text-[10px] font-bold uppercase tracking-widest text-telu-muted/80">Skor Kecocokan</span>
-                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-telu-red to-telu-red-dark text-white font-extrabold text-xs shadow-md glow-red">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-telu-red/10 border border-telu-red/20 text-telu-red font-extrabold text-xs">
                                     {{ number_format($rec->score, 2) }}
                                 </div>
                             </div>

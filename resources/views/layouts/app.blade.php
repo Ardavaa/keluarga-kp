@@ -93,7 +93,7 @@
                 {{-- Sidebar Header --}}
                 <div class="flex h-16 items-center justify-between px-6 border-b border-telu-border/20">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-telu-red text-white shadow-sm glow-red">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-telu-red text-white shadow-sm">
                             <span class="font-bold text-sm">FIF</span>
                         </div>
                         <div class="flex flex-col">

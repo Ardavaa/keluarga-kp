@@ -84,7 +84,7 @@
                     </a>
                 @endif
 
-                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-telu-red px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-telu-red-dark hover:scale-[1.02] active:scale-[0.98]">
+                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-telu-red px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-telu-red-dark">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
                     </svg>

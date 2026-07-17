@@ -35,6 +35,7 @@ class LecturerController extends Controller
             'keywords',
             'researchInterests',
             'profiles',
+            'recommendationsGiven.recommendedLecturer',
         ]);
 
         return view('pages.lecturer-detail', compact('lecturer'));
@@ -76,10 +77,11 @@ class LecturerController extends Controller
 
         return Lecturer::query()
             ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                        ->orWhere('field', 'like', "%{$search}%")
-                        ->orWhere('study_program', 'like', "%{$search}%");
+                $searchLower = mb_strtolower($search, 'UTF-8');
+                $query->where(function ($q) use ($searchLower) {
+                    $q->whereRaw('lower(name) like ?', ["%{$searchLower}%"])
+                        ->orWhereRaw('lower(field) like ?', ["%{$searchLower}%"])
+                        ->orWhereRaw('lower(study_program) like ?', ["%{$searchLower}%"]);
                 });
             })
             ->when($prodi !== '', fn ($query) => $query->where('study_program', $prodi))

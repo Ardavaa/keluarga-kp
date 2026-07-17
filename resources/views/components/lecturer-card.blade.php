@@ -1,5 +1,6 @@
 @props(['lecturer'])
 
+
 @php
     // Hitung inisial nama dosen (maksimal 2 huruf)
     $initials = collect(explode(' ', $lecturer->name))
@@ -8,25 +9,25 @@
         ->join('');
 
     $group = strtoupper(trim((string) $lecturer->research_group));
-    $avatarGradient = match ($group) {
-        'CITI' => 'from-rg-citi to-telu-red text-white',
-        'DSIS' => 'from-rg-dsis to-emerald-600 text-white',
-        'SEAL' => 'from-rg-seal to-telu-navy text-white',
-        default => 'from-gray-400 to-gray-600 text-white',
+    $avatarBg = match ($group) {
+        'CITI' => 'bg-rg-citi/10 text-rg-citi border border-rg-citi/20',
+        'DSIS' => 'bg-rg-dsis/10 text-rg-dsis border border-rg-dsis/20',
+        'SEAL' => 'bg-rg-seal/10 text-rg-seal border border-rg-seal/20',
+        default => 'bg-telu-bg-soft text-telu-muted border border-telu-border/40',
     };
 @endphp
 
 <a
     href="{{ route('lecturers.show', $lecturer) }}"
-    {{ $attributes->merge(['class' => 'group card-premium relative block bg-white p-5 overflow-hidden border border-telu-border/30 hover:border-telu-red/20 shadow-sm']) }}
+    {{ $attributes->merge(['class' => 'group card-premium relative block bg-white p-5 overflow-hidden border border-telu-border hover:border-telu-red/50 transition-colors duration-200']) }}
 >
-    <!-- Left vertical accent bar on hover -->
-    <div class="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-telu-red to-telu-navy opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-
     <div class="flex items-start gap-4">
-        <!-- Avatar Initial with Dynamic Gradient -->
-        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-bold text-sm shadow-inner uppercase tracking-wider {{ $avatarGradient }}">
-            {{ $initials }}
+        <!-- Avatar Photo / Initial with Flat Color -->
+        <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl font-bold text-sm uppercase tracking-wider {{ $avatarBg }}">
+            @if ($lecturer->photo)
+                <img src="{{ $lecturer->photo }}" alt="{{ $lecturer->name }}" class="absolute inset-0 h-full w-full object-cover rounded-xl" onerror="this.remove()">
+            @endif
+            <span>{{ $initials }}</span>
         </div>
 
         <!-- Lecturer Identity -->
