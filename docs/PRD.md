@@ -89,14 +89,14 @@ Karena scraper dan Admin (§3.1) sama-sama menulis ke tabel yang sama, dipakai p
 - Setiap kali scraper menulis/meng-update baris dosen, ia **melewati field yang sudah ditandai `is_overridden = true`** — field itu dianggap sudah dikoreksi manual oleh Admin dan tidak boleh ditimpa otomatis.
 - Ketika Admin mengoreksi sebuah field lewat panel admin, field itu otomatis ditandai `is_overridden = true`.
 - Admin bisa melepas tanda override kapan pun kalau field tersebut ingin kembali ikut auto-update dari scraper.
-- Struktur penyimpanan flag override (kolom boolean per-field di `lecturers`, atau tabel terpisah `lecturer_field_overrides`) masih perlu diputuskan detailnya — lihat §11.
+- **Sudah diputuskan**: struktur penyimpanan flag override pakai **tabel terpisah** `lecturer_field_overrides` (`lecturer_id`, `field`, unique gabungan keduanya) — bukan kolom boolean per-field di `lecturers`. Dipilih karena lebih fleksibel (tidak perlu migration baru tiap ada field baru yang boleh dikoreksi) dan lebih ringkas (menghindari puluhan kolom `*_overridden` di tabel `lecturers`).
 
 ### 4.4 Ringkasan alur data (end-to-end)
 1. **Scraping** — scraper ambil data dari Scopus (Playwright), parsing/cleaning (Gemini API).
 2. **Rekomendasi** — similarity antar dosen dihitung in-memory, hasilnya (pasangan + skor) disiapkan untuk disimpan.
 3. **Simpan** — scraper menulis semua data ke MySQL, melewati field yang sudah ditandai `is_overridden`.
 4. **Tayang** — Laravel (Eloquent, read-only) membaca MySQL dan merender halaman lewat Blade; data tampil otomatis ke dashboard publik tanpa approval.
-5. **Koreksi reaktif** — jika ada laporan data salah, Admin login (Laravel Breeze), mengedit field lewat form, dan field itu ditandai override sehingga aman dari penulisan scraper berikutnya.
+5. **Koreksi reaktif** — jika ada laporan data salah, Admin login, mengedit field lewat form, dan field itu ditandai override sehingga aman dari penulisan scraper berikutnya.
 
 Implikasi:
 - ✅ Arsitektur sederhana — satu database, tanpa langkah sync/impor antar-database.
@@ -196,7 +196,7 @@ Referensi diambil langsung dari `telkomuniversity.ac.id` (screenshot + inspeksi 
 | Unit testing | **PHPUnit** (default scaffold) | Bawaan, tanpa setup tambahan. |
 | Export Excel | **maatwebsite/excel** | Library Laravel paling umum untuk export xlsx. |
 | Export PDF | **barryvdh/laravel-dompdf** | Generate PDF dari view Blade terpisah (`layouts/pdf.blade.php`). |
-| Auth (panel Admin §3.1) | **Laravel Breeze** (Blade stack) | Panel Admin butuh login. Breeze ringan & Blade-based (selaras stack UI). Registrasi publik dimatikan — akun Admin lewat seeder. |
+| Auth (panel Admin §3.1) | **Auth facade & middleware bawaan Laravel** (bukan paket Breeze) | Panel Admin hanya butuh login (tanpa registrasi/verifikasi email/reset password), jadi cukup pakai `Auth`/middleware `auth`+`guest` bawaan Laravel — lebih ringan dari Breeze untuk kebutuhan sesempit ini. Registrasi publik tidak ada route-nya sama sekali — akun Admin lewat seeder. |
 | Versioning & kolaborasi | Git + GitHub (`Ardavaa/keluarga-kp`) | Repo & remote sudah ter-setup. |
 | Environment config | `.env` + `.env.example` di-commit | Supaya kredensial DB tidak hardcode & tidak bergantung path/laptop pribadi. |
 
@@ -212,7 +212,7 @@ Referensi diambil langsung dari `telkomuniversity.ac.id` (screenshot + inspeksi 
 - **Konsistensi repo:** pola `.gitignore` menjaga secrets, cache, dan dependency folder tidak ikut commit. `CLAUDE.md`/`AGENT.md`/`AGENTS.md`/`.claude/` ditambahkan ke `.gitignore` agar file instruksi AI asisten lokal tidak ikut ke GitHub.
 - **Responsiveness:** dashboard harus tetap terbaca di layar laptop standar (1280–1440px) dan idealnya tablet; mobile-first tidak wajib tapi jangan sampai rusak total di layar kecil.
 - **Performa query:** manfaatkan index pada foreign key (`idx_*_lecturer_id`); hindari N+1 query Eloquent (pakai eager loading `with()`).
-- **Keamanan:** kredensial MySQL tidak boleh masuk repo; endpoint tulis (panel Admin §3.1) wajib di balik middleware auth (Laravel Breeze).
+- **Keamanan:** kredensial MySQL tidak boleh masuk repo; endpoint tulis (panel Admin §3.1) wajib di balik middleware `auth`.
 
 ---
 
@@ -224,7 +224,7 @@ Referensi diambil langsung dari `telkomuniversity.ac.id` (screenshot + inspeksi 
 4. **M3 — Halaman inti:** Dashboard Utama, Peta Keahlian, Profil Dosen.
 5. **M4 — Visualisasi lanjutan:** Topik Dominan (chart), Kolaborasi (network graph), Rekomendasi Kolaborasi.
 6. **M5 — Filter global & export Excel/PDF.**
-7. **M6 — Auth & Panel Admin (§3.1):** Laravel Breeze (Blade), matikan registrasi publik, seeder akun admin, grup route `/admin` dengan middleware auth, form koreksi data dosen dengan UI mengikuti desain dashboard (§7) + mekanisme penanda override (§4.3).
+7. **M6 — Auth & Panel Admin (§3.1):** autentikasi manual (Auth facade Laravel, bukan Breeze), matikan registrasi publik, seeder akun admin, grup route `/admin` dengan middleware auth, form koreksi data dosen dengan UI mengikuti desain dashboard (§7) + mekanisme penanda override (§4.3).
 8. **M7 — Polish UI/UX, QA lintas browser, dokumentasi README & serah terima.**
 
 ---
@@ -232,7 +232,7 @@ Referensi diambil langsung dari `telkomuniversity.ac.id` (screenshot + inspeksi 
 ## 11. Open Questions untuk Tim
 
 1. Stack frontend detail: Blade+Alpine (rekomendasi) vs Livewire vs Inertia+Vue?
-2. Struktur teknis penyimpanan flag override (§4.3): kolom boolean per-field di tabel `lecturers`, atau tabel terpisah `lecturer_field_overrides`? Siapa saja yang jadi Admin?
+2. **Sudah diputuskan**: struktur flag override (§4.3) pakai tabel `lecturer_field_overrides`. **Masih perlu dijawab**: siapa saja yang jadi Admin (nama-nama konkret untuk seeder)?
 3. Instance MySQL bersama akan di-host di mana (VPS mana, self-managed atau managed MySQL)? Prasyarat M1 karena scraper & Laravel connect ke instance yang sama.
 4. Target deployment aplikasi Laravel: hosting kampus, VPS, atau platform seperti Railway/Render? (Pastikan platform pilihan bisa reach instance MySQL di atas.)
 5. Siapa pemegang kredensial MySQL yang dibagikan ke anggota tim untuk development lokal?

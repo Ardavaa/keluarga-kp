@@ -90,6 +90,17 @@ class Lecturer extends Model
         return $this->hasMany(Coauthor::class);
     }
 
+    /** Field yang pernah dikoreksi manual oleh Admin (docs/PRD.md §4.3) — dilindungi dari penulisan ulang scraper/import. */
+    public function fieldOverrides(): HasMany
+    {
+        return $this->hasMany(LecturerFieldOverride::class);
+    }
+
+    public function hasOverriddenField(string $field): bool
+    {
+        return $this->fieldOverrides()->where('field', $field)->exists();
+    }
+
     /** Rekomendasi kolaborasi yang diberikan UNTUK dosen ini (dia sebagai target). */
     public function recommendationsGiven(): HasMany
     {

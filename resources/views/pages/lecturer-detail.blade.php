@@ -32,9 +32,9 @@
                 default => 'bg-telu-bg-soft text-telu-muted border border-telu-border/40',
             };
         @endphp
-        <div class="relative flex h-28 w-20 shrink-0 items-center justify-center rounded-2xl font-bold text-xl uppercase tracking-wider {{ $avatarBg }} shadow-sm overflow-hidden">
+        <div class="relative flex h-28 w-20 shrink-0 items-center justify-center rounded-md font-semibold text-xl uppercase tracking-wide overflow-hidden {{ $avatarBg }}">
             @if ($lecturer->photo)
-                <img src="{{ $lecturer->photo }}" alt="{{ $lecturer->name }}" class="absolute inset-0 h-full w-full object-cover rounded-2xl" onerror="this.remove()">
+                <img src="{{ $lecturer->photo }}" alt="{{ $lecturer->name }}" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">
             @endif
             <span>{{ $initials }}</span>
         </div>
@@ -93,53 +93,32 @@
     <!-- Collaboration Recommendations Section -->
     @if ($lecturer->recommendationsGiven->isNotEmpty())
         <div class="mt-8">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-telu-muted font-bold">Rekomendasi Partner Kolaborasi</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-telu-muted">Rekomendasi Partner Kolaborasi</h2>
             <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($lecturer->recommendationsGiven as $rec)
                     @php
                         $partner = $rec->recommendedLecturer;
-                        $initPartner = collect(explode(' ', $partner->name))
-                            ->take(2)
-                            ->map(fn($w) => strtoupper(substr($w, 0, 1)))
-                            ->join('');
-                        $partnerGroup = strtoupper(trim((string) $partner->research_group));
-                        $partnerAvatarBg = match ($partnerGroup) {
-                            'CITI' => 'bg-rg-citi/10 text-rg-citi border border-rg-citi/20',
-                            'DSIS' => 'bg-rg-dsis/10 text-rg-dsis border border-rg-dsis/20',
-                            'SEAL' => 'bg-rg-seal/10 text-rg-seal border border-rg-seal/20',
-                            default => 'bg-telu-bg-soft text-telu-muted border border-telu-border/40',
-                        };
                     @endphp
                     <a
                         href="{{ route('lecturers.show', $partner) }}"
-                        class="group card-premium relative flex items-start gap-4 bg-white p-4 border border-telu-border hover:border-telu-red/50 transition-colors duration-200"
+                        class="group card-premium block p-4 hover:border-telu-red/50"
                     >
-                        <!-- Partner Avatar -->
-                        <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl font-bold text-sm uppercase tracking-wider {{ $partnerAvatarBg }}">
-                            @if ($partner->photo)
-                                <img src="{{ $partner->photo }}" alt="{{ $partner->name }}" class="absolute inset-0 h-full w-full object-cover rounded-xl" onerror="this.remove()">
-                            @endif
-                            <span>{{ $initPartner }}</span>
-                        </div>
-
-                        <!-- Partner Details -->
-                        <div class="min-w-0 flex-1">
-                            <h4 class="font-bold text-xs sm:text-sm text-telu-ink group-hover:text-telu-red transition-colors truncate">
+                        <div class="flex items-start justify-between gap-3">
+                            <h4 class="font-semibold text-sm text-telu-ink group-hover:text-telu-red truncate">
                                 {{ $partner->name_with_title ?: $partner->name }}
                             </h4>
-                            <p class="text-[11px] font-semibold text-telu-muted mt-0.5">
-                                Skor Kecocokan: <span class="text-telu-red font-bold">{{ number_format($rec->score, 2) }}</span>
-                            </p>
-                            @if (!empty($rec->reasons))
-                                <div class="mt-2 flex flex-wrap gap-1">
-                                    @foreach (array_slice($rec->reasons, 0, 2) as $reason)
-                                        <span class="inline-flex items-center rounded bg-telu-bg-soft px-1.5 py-0.5 text-[10px] font-medium text-telu-body border border-telu-border/20">
-                                            {{ $reason }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            @endif
+                            <span class="shrink-0 text-sm font-semibold text-telu-red">{{ number_format($rec->score, 2) }}</span>
                         </div>
+                        <p class="mt-0.5 text-xs text-telu-muted">Skor kecocokan</p>
+                        @if (!empty($rec->reasons))
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                @foreach (array_slice($rec->reasons, 0, 2) as $reason)
+                                    <span class="inline-flex items-center rounded bg-telu-bg-soft-2 px-1.5 py-0.5 text-[11px] text-telu-body">
+                                        {{ $reason }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        @endif
                     </a>
                 @endforeach
             </div>

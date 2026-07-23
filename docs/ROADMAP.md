@@ -23,7 +23,7 @@ Roadmap ini melengkapi [PRD.md](./PRD.md). Setiap fase dipecah jadi **sub-fase b
 | 5 | Visualisasi Lanjutan | ✅ Selesai (3/3 sub-fase) |
 | 6 | Filter Global & Export | ✅ Selesai (3/3 sub-fase) |
 | 7 | Integrasi Data Real (Scraper → MySQL) | ⬜ 0/5 sub-fase (menunggu prasyarat infra MySQL & penyesuaian repo scraper) — sudah ada trial import identitas dosen dari spreadsheet, lihat catatan di Fase 7 |
-| 8 | Auth & Panel Admin | ⬜ 0/4 sub-fase |
+| 8 | Auth & Panel Admin | ✅ Selesai (4/4 sub-fase, pakai auth manual bukan Breeze — lihat catatan) |
 | 9 | Polish, QA & Serah Terima | ⬜ 0/5 sub-fase |
 
 Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ Terblokir
@@ -324,7 +324,17 @@ Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ 
 - [x] Regresi: `kpi-card` juga dipakai `lecturer-detail.blade.php` (Sitasi/H-Index/i10-Index) — dicek masih render benar (Ade Romadhony: Sitasi 163, H-Index 7, i10-Index 11) setelah komponen disederhanakan
 - [x] `php artisan test` tetap lulus 2/2, `storage/logs/laravel.log` bersih, 6 route utama tetap 200 OK
 
-**Belum dikerjakan** (halaman lain masih pakai styling "premium" lama, menyusul di sesi berikutnya sesuai instruksi "mulai dari dashboard"): Peta Keahlian (`expertise.blade.php`), Topik Dominan (`topics.blade.php`), Profil Dosen list & detail (`lecturers.blade.php`, `lecturer-detail.blade.php` — bagian selain kpi-card), Kolaborasi (`collaborations.blade.php` — ada glow effect pada network graph), Rekomendasi (`recommendations.blade.php` — ada gradient score badge & gradient avatar inisial). Sidebar/nav chrome di `layouts/app.blade.php` (ikon SVG, `glow-red` pada logo FIF) juga belum disentuh — masih dipertahankan karena di luar cakupan "mulai dari dashboard".
+### Halaman sisa (lanjutan revisi desain)
+- [x] **Peta Keahlian** (`expertise.blade.php`) — tab bar `rounded-2xl` + `shadow` diganti tab garis-bawah (border-bottom) datar; banner kelompok pakai `card-premium` + border-kiri berwarna (bukan `shadow-sm`/`bg-white/80`); animasi `x-transition` translate dihapus; empty-state pakai `<x-empty-state>`
+- [x] **Topik Dominan** (`topics.blade.php`) — kartu chart & tabel diflatkan (hapus `shadow-sm`, heading pakai gaya section standar); progress bar disederhanakan (hapus `shadow-sm` pada dot, border pada bar, `transition duration-500`)
+- [x] **Profil Dosen (list)** (`lecturers.blade.php`) — form filter diflatkan (`rounded-xl`→`rounded-md`, hapus `shadow-sm`, label `font-bold`→`font-semibold`), tombol Terapkan datar; empty-state pakai `<x-empty-state>`
+- [x] **Profil Dosen (detail)** (`lecturer-detail.blade.php`) — avatar `rounded-2xl shadow-sm`→`rounded-md` datar; kartu partner rekomendasi disederhanakan dari avatar-bulat+skor jadi baris flat (nama + skor)
+- [x] **Kolaborasi** (`collaborations.blade.php`) — kartu graph & tabel diflatkan (hapus `shadow-sm`/`shadow-inner`, `rounded-2xl`→`rounded-md`); node network graph dimatikan shadow-nya; tabel pakai avatar-bulat dihapus jadi nama polos; tip navigasi disederhanakan jadi teks biasa
+- [x] **Rekomendasi** (`recommendations.blade.php`) — kartu top match dirombak: hapus accent bar merah, connector box `shadow-inner`, avatar-bulat, panah-dalam-lingkaran, score badge — jadi kartu flat (skor + pasangan nama + alasan chip datar); tabel alternatif diflatkan
+- [x] Komponen bersama: `lecturer-card` diflatkan (avatar `rounded-xl`→`rounded-md`, hapus border opacity-variant), dan dibuat komponen baru **`<x-empty-state>`** untuk menyeragamkan empty-state (sebelumnya tiap halaman punya blok `rounded-2xl ... shadow-sm` sendiri)
+- [x] Diverifikasi: `npm run build` sukses setelah semua edit (semua class Tailwind baru valid & ter-generate), directive Blade seimbang (`@if/@endif`, `@foreach/@endforeach`, `@forelse/@endforelse`), tidak ada variabel yatim (`$init1`/`$init2` dsisa). Catatan: verifikasi visual via browser preview belum dilakukan di sesi ini karena PHP tidak terpasang di mesin — perlu dicek tampilannya saat server jalan
+
+**Belum disentuh** (di luar cakupan, sengaja dipertahankan): sidebar/nav chrome di `layouts/app.blade.php` (ikon SVG, `glow-red` pada logo FIF).
 
 ---
 
@@ -332,21 +342,36 @@ Legenda status: ⬜ Belum mulai · 🔄 Sedang dikerjakan · ✅ Selesai · ⛔ 
 
 > Mengimplementasikan peran Admin (PRD §3.1) untuk mengoreksi data dosen yang dilaporkan salah. UI mengikuti desain dashboard yang sama (PRD §7), bukan template admin terpisah.
 
-### 8.1 Autentikasi
-- [ ] Pasang **Laravel Breeze** (Blade stack), matikan registrasi publik (route register di-disable)
-- [ ] Seeder akun Admin (bukan registrasi publik) — jumlah admin sedikit & terkontrol
+### 8.1 Autentikasi ✅
+- [x] **Catatan penyesuaian**: paket **Laravel Breeze tidak dipasang** — PHP di lingkungan pengembangan sesi ini awalnya tidak terdeteksi di PATH (ternyata ada, terpasang via WinGet di `%LOCALAPPDATA%\Microsoft\WinGet\Packages\PHP.PHP.8.3_...`, cuma belum ditambahkan ke PATH sistem). Karena kebutuhan login hanya untuk Admin (tanpa registrasi/verifikasi email/reset password), autentikasi ditulis manual pakai **Auth facade & middleware `auth`/`guest` bawaan Laravel** — tabel `users`/`sessions`/`password_reset_tokens` sudah ada dari migration default, jadi tidak perlu dependency tambahan. Hasil akhirnya setara Breeze untuk kebutuhan kita, dengan footprint lebih kecil
+- [x] Dibuat: `app/Http/Requests/Auth/LoginRequest.php` (validasi + rate limit 5x percobaan per email+IP), `app/Http/Controllers/Auth/AuthenticatedSessionController.php` (`create`/`store`/`destroy`), `routes/auth.php` (didaftarkan dari `bootstrap/app.php` via closure `then`) — **tidak ada route registrasi publik sama sekali**, sesuai PRD §3.1
+- [x] View: `resources/views/layouts/guest.blade.php` (layout minim terpusat, tanpa sidebar) + `resources/views/auth/login.blade.php` (form email/password/remember, gaya flat konsisten dengan dashboard — `card-premium`, `rounded-md`, palet TelU)
+- [x] **Seeder akun Admin**: `database/seeders/AdminSeeder.php` — baca `ADMIN_EMAIL`/`ADMIN_PASSWORD` dari `.env` (fallback default kalau belum di-set), `updateOrCreate` berdasarkan email (idempotent, aman dijalankan ulang). Dipanggil dari `DatabaseSeeder` (menggantikan `User::factory()` "Test User" bawaan scaffold yang dihapus). `.env.example` & `.env` lokal ditambah placeholder `ADMIN_EMAIL`/`ADMIN_PASSWORD` dengan catatan wajib diganti sebelum deploy
+- [x] Diverifikasi end-to-end lewat browser preview (server `php artisan serve` berhasil dijalankan setelah PHP ditambahkan ke PATH sesi ini): `migrate:fresh --seed` sukses, admin ter-seed (`admin@fif.telkomuniversity.ac.id`, password ter-hash benar via `Hash::check`), `GET /login` render form dengan benar, login sukses redirect ke Dashboard (fallback sampai panel admin Fase 8.3 ada), middleware `guest` bekerja (user yang sudah login diarahkan menjauh dari `/login`), route `login`/`logout` terdaftar di `route:list`. `php artisan test` tetap lulus, `storage/logs/laravel.log` tidak ada error baru dari pengujian ini (2 entri lama di log tersebut bertanggal 17 Juli, bukan dari sesi ini)
+- [x] `.claude/launch.json` dibuat menunjuk ke path PHP WinGet ini, supaya preview server bisa dijalankan lagi di sesi berikutnya pakai `preview_start`
 
-### 8.2 Proteksi route
-- [ ] Grup route `/admin` di balik middleware `auth`
-- [ ] Halaman dashboard publik tetap bisa diakses tanpa login
+### 8.2 Proteksi route ✅
+- [x] Dibuat `routes/admin.php` — grup route prefix `/admin`, nama `admin.*`, di balik middleware `auth`; didaftarkan dari `bootstrap/app.php` (pola sama dengan `routes/auth.php` di 8.1)
+- [x] `app/Http/Controllers/Admin/DashboardController.php` + `resources/views/admin/dashboard.blade.php` — halaman placeholder Panel Admin (`extends layouts.app`, jadi otomatis pakai sidebar & gaya flat yang sama dengan dashboard publik), berisi info user login + tombol Keluar. Form koreksi data sungguhan menyusul di 8.3
+- [x] Redirect login (`AuthenticatedSessionController@store`) diarahkan ke `route('admin.dashboard')` (pakai `redirect()->intended()`, jadi kalau user mencoba akses halaman admin tertentu sebelum login, setelah login diarahkan balik ke situ)
+- [x] Top bar `layouts/app.blade.php` dibuat auth-aware: tampil link "Masuk Admin" kalau belum login, atau "Panel Admin" kalau sudah login (pakai `@auth`/`@else`/`@endauth`) — supaya `/login` & `/admin` bisa dijangkau dari UI, bukan cuma lewat URL manual
+- [x] Diverifikasi lewat browser preview (server `php artisan serve`): akses `/admin` tanpa login → diarahkan ke `/login` (middleware `auth` bekerja); setelah login → langsung ke Panel Admin; dashboard publik (`/`) tetap bisa diakses tanpa sesi login; tombol "Keluar" di Panel Admin berhasil logout & kembali ke halaman login; link "Panel Admin"/"Masuk Admin" di top bar berubah sesuai status login. `npm run build` sukses, `php artisan test` tetap lulus 2/2
 
-### 8.3 Form koreksi data dosen
-- [ ] Halaman daftar + form edit data dosen (identitas, klasifikasi, metrik) dengan layout & komponen sama dashboard (sidebar, palet TelU, gaya flat)
-- [ ] Saat sebuah field dikoreksi, tandai `is_overridden = true` untuk field itu (mekanisme §4.3 PRD)
+### 8.3 Form koreksi data dosen ✅
+- [x] **Keputusan struktur override** (menuntaskan open question PRD §11): dipilih **tabel terpisah** `lecturer_field_overrides` (`lecturer_id`, `field`, unique gabungan) — bukan kolom boolean per-field di `lecturers`. Migration `2026_07_23_000001_create_lecturer_field_overrides_table.php` (FK cascade ke `lecturers`), model `LecturerFieldOverride`, plus helper `Lecturer::fieldOverrides()`/`hasOverriddenField()`
+- [x] `app/Http/Controllers/Admin/LecturerController.php` — `index` (daftar dosen + search nama/kode/NIP, paginated), `edit` (form per dosen), `update` (validasi, bandingkan nilai lama vs baru per field, simpan, lalu `LecturerFieldOverride::updateOrCreate` untuk tiap field yang **benar-benar berubah**). Field yang bisa dikoreksi: nama, nama+gelar, kode dosen, prodi, kelompok keahlian, jabatan fungsional, bidang keilmuan, sitasi, h-index, i10-index (identitas+klasifikasi+metrik sesuai PRD §5 — publikasi/kolaborasi/rekomendasi individual di luar cakupan form ini)
+- [x] Routes: `admin.lecturers.index`/`edit`/`update` di `routes/admin.php` (di dalam grup middleware `auth` yang sama dengan 8.2)
+- [x] View: `admin/lecturers/index.blade.php` (tabel + search, gaya sama dengan halaman Profil Dosen publik) dan `admin/lecturers/edit.blade.php` (form 2 kolom, badge "Sudah dikoreksi — dilindungi dari import" muncul di field yang sudah pernah di-override) — keduanya `extends layouts.app`, otomatis pakai sidebar & gaya flat yang sama
+- [x] Panel Admin (`admin/dashboard.blade.php`) ditambah tombol "Cari & Koreksi Data Dosen" yang mengarah ke daftar dosen
+- [x] **Command import scraper (`ImportLecturersFromSpreadsheet`, dari Fase 7 trial) disesuaikan** untuk menghormati override: sebelum `updateOrCreate`, field yang punya baris di `lecturer_field_overrides` untuk dosen itu di-`unset` dari data yang mau ditulis — jadi command ini sekaligus jadi bukti nyata mekanisme §4.3 PRD, bukan cuma didesain di atas kertas. Ringkasan command ditambah baris "Field dilewati (sudah dikoreksi Admin)"
+- [x] Diverifikasi lewat browser preview: login → Panel Admin → daftar dosen (9 dosen tampil, search "Achmad" hanya menampilkan 1 hasil yang cocok) → buka form koreksi salah satu dosen → ubah field "Bidang Keilmuan" → simpan → pesan sukses tampil ("Field yang diubah (field) ditandai override...") → badge "Sudah dikoreksi — dilindungi dari import" muncul di field itu setelah reload form
+- [x] **Diverifikasi lewat Tinker (simulasi re-import)**: dijalankan urutan yang persis meniru logic command — field `field` yang sudah di-override TETAP nilai koreksi Admin meski "data scraper" baru dicoba ditulis ke situ, sedangkan field `academic_rank` yang belum di-override berhasil ter-update normal ke nilai baru. Ini membuktikan filtering override bekerja tepat: melindungi field yang dikoreksi, tidak memblokir field lain
+- [x] `migrate:fresh --seed` sukses dengan tabel baru, `php artisan test` tetap lulus 2/2, `storage/logs/laravel.log` tidak ada error baru
 
-### 8.4 Verifikasi
-- [ ] Uji: User tanpa login tidak bisa akses `/admin`; Admin bisa login & menyimpan koreksi
-- [ ] Uji: field yang dikoreksi Admin tidak tertimpa saat data scraper diperbarui (bergantung Fase 7.3)
+### 8.4 Verifikasi ✅
+- [x] Ditambah **PHPUnit Feature test** (bukan cuma verifikasi klik manual di 8.2/8.3, supaya jadi regresi otomatis): `tests/Feature/AdminAuthTest.php` (guest diblokir dari `/admin` & diarahkan ke `/login`; Admin bisa login & akses `/admin`; dashboard publik tetap 200 tanpa login; login gagal dengan password salah tetap sebagai guest) dan `tests/Feature/LecturerOverrideTest.php` (edit field via panel admin membuat baris override & mengubah nilai; **command `import:lecturers` dijalankan sungguhan** dengan file xlsx sementara yang dibuat via PhpSpreadsheet di dalam test — field yang di-override tetap nilai koreksi manual, field lain ikut ter-update dari "data scraper")
+- [x] **Bug ditemukan & diperbaiki** lewat test ini (bukan cuma dari klik manual): form koreksi awalnya mengizinkan `citation_count`/`h_index`/`i10_index` dikosongkan → jadi `null` → melanggar constraint `NOT NULL DEFAULT 0` di migration `lecturers` (kolom-kolom itu memang tidak nullable, beda dari kolom string lain yang semuanya `nullable()`). Diperbaiki: `LecturerController@update` sekarang fallback nilai kosong ke `0` untuk ketiga kolom numerik itu sebelum `$lecturer->update()`
+- [x] Semua 8 test (`php artisan test`) lulus setelah perbaikan; `storage/logs/laravel.log` dicek — satu entri error yang ada adalah residu dari run yang gagal SEBELUM fix (bukan error baru setelah fix, dikonfirmasi lewat re-run bersih)
 
 ---
 

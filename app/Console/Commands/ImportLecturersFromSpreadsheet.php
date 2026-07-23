@@ -89,6 +89,7 @@ class ImportLecturersFromSpreadsheet extends Command
         $withNip = 0;
         $withoutNip = 0;
         $aiCount = 0;
+        $skippedOverrides = 0;
 
         foreach ($byKode as $row) {
             [, $nama, $kode, $prodi, $kelompokRaw, $jfa, $keilmuanRaw] = $row;
@@ -119,19 +120,32 @@ class ImportLecturersFromSpreadsheet extends Command
                 $aiCount++;
             }
 
-            $lecturer = Lecturer::updateOrCreate(
-                ['code' => $code],
-                [
-                    'name' => $name,
-                    'full_name' => $name,
-                    'lecturer_code' => $kode,
-                    'study_program' => trim((string) $prodi),
-                    'research_group' => $researchGroup,
-                    'academic_rank' => $this->titleCase($jfa),
-                    'field' => $field,
-                    'ai_categories' => $isAiField ? [$field] : [],
-                ]
-            );
+            $attributes = [
+                'name' => $name,
+                'full_name' => $name,
+                'lecturer_code' => $kode,
+                'study_program' => trim((string) $prodi),
+                'research_group' => $researchGroup,
+                'academic_rank' => $this->titleCase($jfa),
+                'field' => $field,
+                'ai_categories' => $isAiField ? [$field] : [],
+            ];
+
+            $existing = Lecturer::where('code', $code)->first();
+
+            // Field yang sudah dikoreksi manual Admin (docs/PRD.md §4.3) dilewati
+            // supaya import ini tidak menimpa koreksi manual.
+            if ($existing) {
+                $overriddenFields = $existing->fieldOverrides()->pluck('field')->all();
+                foreach ($overriddenFields as $overriddenField) {
+                    unset($attributes[$overriddenField]);
+                }
+                if ($overriddenFields !== []) {
+                    $skippedOverrides += count($overriddenFields);
+                }
+            }
+
+            $lecturer = Lecturer::updateOrCreate(['code' => $code], $attributes);
 
             if ($lecturer->wasRecentlyCreated) {
                 $created++;
@@ -158,6 +172,7 @@ class ImportLecturersFromSpreadsheet extends Command
                 ['Ketemu NIP asli (Sheet1)', $withNip],
                 ['Fallback pakai KODE (tanpa NIP)', $withoutNip],
                 ['Field masuk kategori AI', $aiCount],
+                ['Field dilewati (sudah dikoreksi Admin)', $skippedOverrides],
             ]
         );
 

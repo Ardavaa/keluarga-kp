@@ -40,13 +40,13 @@
 
     <!-- Tab Filter Container using Alpine.js -->
     <div x-data="{ activeTab: 'ALL' }" class="w-full">
-        
+
         <!-- Tab Navigation Bar -->
-        <div class="flex flex-wrap items-center gap-2 mb-8 bg-white border border-telu-border/30 rounded-2xl p-2 shadow-sm">
-            <button 
-                @click="activeTab = 'ALL'" 
-                :class="activeTab === 'ALL' ? 'bg-telu-navy text-white shadow-sm' : 'text-telu-body hover:bg-telu-bg-soft/75 hover:text-telu-ink'"
-                class="rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-200 cursor-pointer"
+        <div class="mb-8 flex flex-wrap items-center gap-2 border-b border-telu-border">
+            <button
+                @click="activeTab = 'ALL'"
+                :class="activeTab === 'ALL' ? 'border-telu-red text-telu-red' : 'border-transparent text-telu-muted hover:text-telu-ink'"
+                class="-mb-px border-b-2 px-4 py-2.5 text-sm font-medium cursor-pointer"
             >
                 Semua Kelompok
             </button>
@@ -54,17 +54,11 @@
             @foreach ($groupedLecturers as $group => $lecturers)
                 @php
                     $grpKey = strtoupper(trim($group));
-                    $btnClass = match ($grpKey) {
-                        'CITI' => "activeTab === 'CITI' ? 'bg-rg-citi/15 text-rg-citi ring-1 ring-rg-citi/30 font-bold' : 'text-telu-body hover:bg-telu-bg-soft/75 hover:text-telu-ink'",
-                        'DSIS' => "activeTab === 'DSIS' ? 'bg-rg-dsis/15 text-rg-dsis ring-1 ring-rg-dsis/30 font-bold' : 'text-telu-body hover:bg-telu-bg-soft/75 hover:text-telu-ink'",
-                        'SEAL' => "activeTab === 'SEAL' ? 'bg-rg-seal/15 text-rg-seal ring-1 ring-rg-seal/30 font-bold' : 'text-telu-body hover:bg-telu-bg-soft/75 hover:text-telu-ink'",
-                        default => "activeTab === '$grpKey' ? 'bg-rg-unknown/15 text-rg-unknown ring-1 ring-rg-unknown/30 font-bold' : 'text-telu-body hover:bg-telu-bg-soft/75 hover:text-telu-ink'",
-                    };
                 @endphp
-                <button 
-                    @click="activeTab = '{{ $grpKey }}'" 
-                    :class="{!! $btnClass !!}"
-                    class="rounded-xl px-4 py-2.5 text-xs font-semibold transition-all duration-200 cursor-pointer"
+                <button
+                    @click="activeTab = '{{ $grpKey }}'"
+                    :class="activeTab === '{{ $grpKey }}' ? 'border-telu-red text-telu-red' : 'border-transparent text-telu-muted hover:text-telu-ink'"
+                    class="-mb-px border-b-2 px-4 py-2.5 text-sm font-medium cursor-pointer"
                 >
                     {{ $grpKey }}
                 </button>
@@ -76,31 +70,31 @@
             @php
                 $grpKey = strtoupper(trim($group));
                 $details = $groupDetails[$grpKey] ?? $groupDetails['LAINNYA'];
+                $accentBorder = match ($grpKey) {
+                    'CITI' => 'border-l-rg-citi',
+                    'DSIS' => 'border-l-rg-dsis',
+                    'SEAL' => 'border-l-rg-seal',
+                    default => 'border-l-rg-unknown',
+                };
             @endphp
-            
-            <div 
-                x-show="activeTab === 'ALL' || activeTab === '{{ $grpKey }}'" 
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-2"
-                x-transition:enter-end="opacity-100 translate-y-0"
+
+            <div
+                x-show="activeTab === 'ALL' || activeTab === '{{ $grpKey }}'"
                 class="mb-12"
             >
                 <!-- Group Info Banner -->
-                <div class="rounded-2xl p-6 shadow-sm border border-telu-border/20 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4 {{ $details['banner'] }}">
+                <div class="card-premium border-l-4 {{ $accentBorder }} p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="space-y-1 max-w-2xl">
                         <div class="flex items-center gap-3">
-                            <h3 class="text-lg font-bold tracking-tight text-telu-ink uppercase">{{ $grpKey }}</h3>
-                            <span class="inline-flex rounded-lg px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ring-1 ring-inset {{ $details['badge'] }}">
-                                {{ $grpKey }}
-                            </span>
+                            <h3 class="text-base font-semibold tracking-tight text-telu-ink uppercase">{{ $grpKey }}</h3>
+                            <x-research-group-badge :group="$grpKey" />
                         </div>
-                        <h4 class="text-sm font-bold text-telu-ink/90">{{ $details['name'] }}</h4>
+                        <h4 class="text-sm font-semibold text-telu-ink">{{ $details['name'] }}</h4>
                         <p class="text-xs text-telu-muted leading-relaxed">{{ $details['description'] }}</p>
                     </div>
-                    
-                    <div class="shrink-0 flex items-center gap-2 bg-white/80 rounded-xl px-4 py-2.5 border border-telu-border/20 self-start md:self-auto shadow-sm">
-                        <span class="text-lg font-extrabold text-telu-ink">{{ $lecturers->count() }}</span>
-                        <span class="text-xs font-semibold text-telu-muted">Dosen Aktif</span>
+
+                    <div class="shrink-0 self-start md:self-auto text-sm text-telu-muted">
+                        <strong class="text-lg font-semibold text-telu-ink">{{ $lecturers->count() }}</strong> Dosen
                     </div>
                 </div>
 
@@ -112,13 +106,7 @@
                 </div>
             </div>
         @empty
-            <div class="rounded-2xl border border-telu-border/30 bg-white p-12 text-center shadow-sm">
-                <svg class="mx-auto h-12 w-12 text-telu-muted/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                <p class="mt-4 text-base font-semibold text-telu-ink">Belum Ada Data</p>
-                <p class="mt-1 text-sm text-telu-muted">Tidak ditemukan data keahlian dosen FIF.</p>
-            </div>
+            <x-empty-state title="Belum Ada Data" message="Tidak ditemukan data keahlian dosen FIF." />
         @endforelse
     </div>
 @endsection
