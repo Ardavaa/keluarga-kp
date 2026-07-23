@@ -25,9 +25,9 @@ class CollaborationsExport implements FromCollection, WithHeadings, WithMapping
     public function map($collaboration): array
     {
         return [
-            $collaboration->lecturerOne->name,
+            $collaboration->lecturerOne->full_name,
             $collaboration->lecturerOne->research_group,
-            $collaboration->lecturerTwo->name,
+            $collaboration->lecturerTwo->full_name,
             $collaboration->lecturerTwo->research_group,
             $collaboration->collaboration_count,
         ];

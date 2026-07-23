@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Koreksi: ' . $lecturer->name)
+@section('title', 'Koreksi: ' . $lecturer->full_name)
 
 @php
     $fields = [
-        'name' => 'Nama',
+        'full_name' => 'Nama',
         'name_with_title' => 'Nama dengan Gelar',
         'lecturer_code' => 'Kode Dosen',
         'study_program' => 'Program Studi',
@@ -20,7 +20,7 @@
 @section('content')
     <x-page-header
         title="Koreksi Data Dosen"
-        subtitle="{{ $lecturer->name }} &middot; Kode: {{ $lecturer->lecturer_code ?: '—' }} &middot; NIP: {{ $lecturer->code }}"
+        subtitle="{{ $lecturer->full_name }} &middot; Kode: {{ $lecturer->lecturer_code ?: '—' }} &middot; NIP: {{ $lecturer->code }}"
     />
 
     <a href="{{ route('admin.lecturers.index') }}" class="mb-4 inline-flex items-center gap-1 text-sm text-telu-muted hover:text-telu-red">
@@ -83,4 +83,82 @@
             Simpan Koreksi
         </button>
     </form>
+
+    <div class="card-premium mt-6 p-6">
+        <h2 class="text-sm font-semibold uppercase tracking-wide text-telu-muted">Publikasi</h2>
+
+        <div class="mt-4 space-y-3">
+            @forelse ($publications as $publication)
+                <form method="POST" action="{{ route('admin.publications.update', [$lecturer, $publication]) }}" class="flex flex-col gap-2 rounded-md border border-telu-border p-3 md:flex-row md:items-center">
+                    @csrf
+                    @method('PUT')
+
+                    <input
+                        type="text"
+                        name="title"
+                        value="{{ old('title', $publication->title) }}"
+                        class="w-full flex-1 rounded-md border border-telu-border px-3.5 py-2 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red"
+                        placeholder="Judul publikasi"
+                    >
+                    <input
+                        type="number"
+                        name="year"
+                        min="1900"
+                        max="{{ now()->year + 1 }}"
+                        value="{{ old('year', $publication->year) }}"
+                        class="w-full rounded-md border border-telu-border px-3.5 py-2 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red md:w-28"
+                        placeholder="Tahun"
+                    >
+
+                    <div class="flex gap-2">
+                        <button type="submit" class="rounded-md bg-telu-red px-3.5 py-2 text-xs font-medium text-white hover:bg-telu-red-dark">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+
+                <form method="POST" action="{{ route('admin.publications.destroy', [$lecturer, $publication]) }}" class="-mt-2 flex justify-end">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-xs text-telu-muted hover:text-telu-red" onclick="return confirm('Hapus publikasi ini?')">
+                        Hapus
+                    </button>
+                </form>
+            @empty
+                <p class="text-sm text-telu-muted">Belum ada publikasi untuk dosen ini.</p>
+            @endforelse
+        </div>
+
+        <form method="POST" action="{{ route('admin.publications.store', $lecturer) }}" class="mt-4 flex flex-col gap-2 rounded-md border border-dashed border-telu-border p-3 md:flex-row md:items-center">
+            @csrf
+
+            <input
+                type="text"
+                name="title"
+                value="{{ old('title') }}"
+                class="w-full flex-1 rounded-md border border-telu-border px-3.5 py-2 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red"
+                placeholder="Judul publikasi baru"
+            >
+            <input
+                type="number"
+                name="year"
+                min="1900"
+                max="{{ now()->year + 1 }}"
+                value="{{ old('year') }}"
+                class="w-full rounded-md border border-telu-border px-3.5 py-2 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red md:w-28"
+                placeholder="Tahun"
+            >
+
+            <button type="submit" class="rounded-md bg-telu-ink px-3.5 py-2 text-xs font-medium text-white hover:bg-telu-red">
+                Tambah Publikasi
+            </button>
+        </form>
+
+        @error('title')
+            <p class="mt-2 text-xs text-telu-red">{{ $message }}</p>
+        @enderror
+        @error('year')
+            <p class="mt-2 text-xs text-telu-red">{{ $message }}</p>
+        @enderror
+    </div>
 @endsection

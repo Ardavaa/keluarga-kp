@@ -10,7 +10,7 @@ class ExpertiseMapController extends Controller
 
     public function index()
     {
-        $grouped = Lecturer::orderBy('name')
+        $grouped = Lecturer::orderBy('full_name')
             ->get()
             ->groupBy(fn (Lecturer $lecturer) => $lecturer->research_group ?: 'Lainnya');
 

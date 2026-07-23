@@ -21,7 +21,7 @@
         </div>
 
         @if ($icon)
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md {{ $iconColorClasses }}">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.625rem] {{ $iconColorClasses }}">
                 {!! $icon !!}
             </div>
         @endif

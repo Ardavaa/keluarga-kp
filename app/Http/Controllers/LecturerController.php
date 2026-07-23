@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LecturerController extends Controller
 {
-    private const SORTABLE_COLUMNS = ['name', 'research_group', 'study_program'];
+    private const SORTABLE_COLUMNS = ['full_name', 'research_group', 'study_program'];
 
     public function index(Request $request)
     {
@@ -62,9 +62,9 @@ class LecturerController extends Controller
 
     private function resolveSort(Request $request): string
     {
-        $sort = $request->query('sort', 'name');
+        $sort = $request->query('sort', 'full_name');
 
-        return in_array($sort, self::SORTABLE_COLUMNS, true) ? $sort : 'name';
+        return in_array($sort, self::SORTABLE_COLUMNS, true) ? $sort : 'full_name';
     }
 
     private function filteredLecturers(Request $request)
@@ -79,7 +79,7 @@ class LecturerController extends Controller
             ->when($search !== '', function ($query) use ($search) {
                 $searchLower = mb_strtolower($search, 'UTF-8');
                 $query->where(function ($q) use ($searchLower) {
-                    $q->whereRaw('lower(name) like ?', ["%{$searchLower}%"])
+                    $q->whereRaw('lower(full_name) like ?', ["%{$searchLower}%"])
                         ->orWhereRaw('lower(field) like ?', ["%{$searchLower}%"])
                         ->orWhereRaw('lower(study_program) like ?', ["%{$searchLower}%"]);
                 });

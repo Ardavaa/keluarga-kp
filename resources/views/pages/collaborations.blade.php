@@ -62,7 +62,7 @@
                                 <!-- Lecturer 1 Column -->
                                 <td class="px-4 py-4 align-middle">
                                     <a href="{{ route('lecturers.show', $collaboration->lecturerOne) }}" class="font-medium text-telu-ink hover:text-telu-red">
-                                        {{ $collaboration->lecturerOne->name }}
+                                        {{ $collaboration->lecturerOne->full_name }}
                                     </a>
                                     <span class="block text-xs text-telu-muted">KK: {{ $collaboration->lecturerOne->research_group }}</span>
                                 </td>
@@ -70,7 +70,7 @@
                                 <!-- Lecturer 2 Column -->
                                 <td class="px-4 py-4 align-middle">
                                     <a href="{{ route('lecturers.show', $collaboration->lecturerTwo) }}" class="font-medium text-telu-ink hover:text-telu-red">
-                                        {{ $collaboration->lecturerTwo->name }}
+                                        {{ $collaboration->lecturerTwo->full_name }}
                                     </a>
                                     <span class="block text-xs text-telu-muted">KK: {{ $collaboration->lecturerTwo->research_group }}</span>
                                 </td>

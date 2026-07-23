@@ -21,7 +21,7 @@
         <tbody>
             @forelse ($lecturers as $lecturer)
                 <tr>
-                    <td>{{ $lecturer->name }}</td>
+                    <td>{{ $lecturer->full_name }}</td>
                     <td>{{ $lecturer->lecturer_code }}</td>
                     <td>{{ $lecturer->code }}</td>
                     <td>{{ $lecturer->study_program }}</td>

@@ -121,7 +121,6 @@ class ImportLecturersFromSpreadsheet extends Command
             }
 
             $attributes = [
-                'name' => $name,
                 'full_name' => $name,
                 'lecturer_code' => $kode,
                 'study_program' => trim((string) $prodi),

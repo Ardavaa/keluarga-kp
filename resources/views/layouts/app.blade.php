@@ -55,27 +55,13 @@
         @endphp
 
         {{-- Top Accent Bar (Mobile-Sticky, Desktop-Fixed/Static) --}}
-        <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-telu-border/40 bg-white px-4 shadow-sm md:static md:bg-transparent md:border-none md:shadow-none sm:px-6 lg:px-8">
+        <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-telu-border/40 bg-white px-4 shadow-sm md:hidden sm:px-6 lg:px-8">
             <div class="flex items-center gap-3 md:hidden">
                 <span class="h-6 w-1.5 rounded-full bg-telu-red" aria-hidden="true"></span>
                 <span class="text-sm font-bold tracking-tight text-telu-ink">FIF Research Hub</span>
             </div>
             
-            <div class="hidden text-xs font-semibold text-telu-muted md:flex items-center gap-2">
-                Satgas AI FIF &middot; Fakultas Informatika, Telkom University
-            </div>
-
             <div class="flex items-center gap-3">
-                @auth
-                    <a href="{{ route('admin.dashboard') }}" class="text-xs font-semibold text-telu-red hover:underline">
-                        Panel Admin
-                    </a>
-                @else
-                    <a href="{{ route('login') }}" class="text-xs font-semibold text-telu-muted hover:text-telu-red">
-                        Masuk Admin
-                    </a>
-                @endauth
-
                 <button
                     type="button"
                     @click="sidebarOpen = true"
@@ -125,6 +111,19 @@
                     </button>
                 </div>
 
+                {{-- User Profile (Admin yang login) --}}
+                @auth
+                    <div class="sidebar-stagger-item flex items-center gap-3 px-6 py-4 border-b border-telu-border/20" style="--stagger-delay: 0.03s">
+                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-telu-red text-sm font-bold text-white">
+                            {{ Str::of(auth()->user()->name)->explode(' ')->map(fn ($w) => Str::substr($w, 0, 1))->take(2)->implode('') }}
+                        </div>
+                        <div class="flex flex-col truncate">
+                            <span class="truncate text-sm font-semibold leading-tight text-telu-ink">{{ auth()->user()->name }}</span>
+                            <span class="truncate text-xs text-telu-muted">{{ auth()->user()->email }}</span>
+                        </div>
+                    </div>
+                @endauth
+
                 {{-- Navigation Items --}}
                 <nav class="flex-1 space-y-1.5 px-4 py-6 overflow-y-auto" aria-label="Navigasi utama">
                     @foreach ($navItems as $item)
@@ -133,35 +132,47 @@
                         @endphp
                         <a
                             href="{{ route($item['route']) }}"
-                            class="group flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 border-l-4 {{ $isActive ? 'border-telu-red bg-telu-red/5 text-telu-red shadow-sm' : 'border-transparent text-telu-body hover:bg-telu-bg-soft/75 hover:text-telu-ink' }}"
+                            style="--stagger-delay: {{ 0.06 + $loop->index * 0.05 }}s"
+                            class="sidebar-stagger-item group flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 {{ $isActive ? 'bg-telu-red/5 text-telu-red shadow-sm' : 'text-telu-body hover:bg-telu-bg-soft/75 hover:text-telu-ink' }}"
                         >
                             <span class="transition-transform group-hover:scale-110 duration-200 {{ $isActive ? 'text-telu-red' : 'text-telu-muted group-hover:text-telu-ink' }}">
                                 {!! $item['icon'] !!}
                             </span>
                             <span>{{ $item['label'] }}</span>
+                            <svg class="ml-auto h-4 w-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100 {{ $isActive ? 'text-telu-red' : 'text-telu-muted' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
                         </a>
                     @endforeach
                 </nav>
 
-                {{-- Sidebar Footer --}}
-                <div class="p-4 border-t border-telu-border/20">
-                    <div class="rounded-xl bg-telu-bg-soft p-4 text-center">
-                        <span class="block text-xs font-bold text-telu-ink">Satgas AI FIF</span>
-                        <span class="mt-0.5 block text-[10px] text-telu-muted">Dashboard Kolaborasi Dosen</span>
+                {{-- Logout (Admin yang login) --}}
+                @auth
+                    <div class="px-4 pb-2">
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="group flex w-full items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium text-telu-red transition-colors duration-200 hover:bg-telu-red/10"
+                            >
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                                <span>Keluar</span>
+                            </button>
+                        </form>
                     </div>
-                </div>
+                @endauth
             </aside>
 
             {{-- Kolom konten --}}
             <div class="flex flex-1 flex-col overflow-y-auto">
                 <main class="flex-1">
-                    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                    <div class="mx-auto max-w-[1800px] px-4 py-8 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
                         @yield('content')
                     </div>
                 </main>
 
                 <footer class="border-t border-telu-border/20 bg-white">
-                    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 text-xs text-telu-muted sm:px-6 lg:px-8">
+                    <div class="mx-auto flex max-w-[1800px] items-center justify-between px-4 py-6 text-xs text-telu-muted sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
                         <span>&copy; {{ date('Y') }} KP Kelompok 1 &mdash; Fakultas Informatika, Telkom University</span>
                         <span>Satgas AI FIF</span>
                     </div>

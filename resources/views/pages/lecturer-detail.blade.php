@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $lecturer->name_with_title ?: $lecturer->name)
+@section('title', $lecturer->name_with_title ?: $lecturer->full_name)
 
 @php
     $profilesByPlatform = $lecturer->profiles->keyBy('platform');
@@ -20,7 +20,7 @@
     <div class="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center">
         <!-- Lecturer Photo / Avatar (Portrait Aspect Ratio to Prevent Stretching) -->
         @php
-            $initials = collect(explode(' ', $lecturer->name))
+            $initials = collect(explode(' ', $lecturer->full_name))
                 ->take(2)
                 ->map(fn($w) => strtoupper(substr($w, 0, 1)))
                 ->join('');
@@ -32,16 +32,16 @@
                 default => 'bg-telu-bg-soft text-telu-muted border border-telu-border/40',
             };
         @endphp
-        <div class="relative flex h-28 w-20 shrink-0 items-center justify-center rounded-md font-semibold text-xl uppercase tracking-wide overflow-hidden {{ $avatarBg }}">
+        <div class="relative flex h-28 w-20 shrink-0 items-center justify-center rounded-xl font-semibold text-xl uppercase tracking-wide overflow-hidden {{ $avatarBg }}">
             @if ($lecturer->photo)
-                <img src="{{ $lecturer->photo }}" alt="{{ $lecturer->name }}" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">
+                <img src="{{ $lecturer->photo }}" alt="{{ $lecturer->full_name }}" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">
             @endif
             <span>{{ $initials }}</span>
         </div>
 
         <div>
             <div class="flex flex-wrap items-center gap-3">
-                <h1 class="text-2xl font-semibold text-telu-ink">{{ $lecturer->name_with_title ?: $lecturer->name }}</h1>
+                <h1 class="text-2xl font-semibold text-telu-ink">{{ $lecturer->name_with_title ?: $lecturer->full_name }}</h1>
                 <x-research-group-badge :group="$lecturer->research_group" />
             </div>
             <p class="mt-1 text-sm text-telu-muted">
@@ -105,7 +105,7 @@
                     >
                         <div class="flex items-start justify-between gap-3">
                             <h4 class="font-semibold text-sm text-telu-ink group-hover:text-telu-red truncate">
-                                {{ $partner->name_with_title ?: $partner->name }}
+                                {{ $partner->name_with_title ?: $partner->full_name }}
                             </h4>
                             <span class="shrink-0 text-sm font-semibold text-telu-red">{{ number_format($rec->score, 2) }}</span>
                         </div>

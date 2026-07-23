@@ -27,11 +27,11 @@
                         <!-- Pair -->
                         <div class="mt-3 text-sm">
                             <a href="{{ route('lecturers.show', $rec->lecturer) }}" class="font-medium text-telu-ink hover:text-telu-red">
-                                {{ $rec->lecturer->name }}
+                                {{ $rec->lecturer->full_name }}
                             </a>
                             <span class="mx-1 text-telu-muted">&amp;</span>
                             <a href="{{ route('lecturers.show', $rec->recommendedLecturer) }}" class="font-medium text-telu-ink hover:text-telu-red">
-                                {{ $rec->recommendedLecturer->name }}
+                                {{ $rec->recommendedLecturer->full_name }}
                             </a>
                         </div>
 
@@ -77,14 +77,14 @@
                                     <!-- Lecturer 1 -->
                                     <td class="px-4 py-4 align-middle">
                                         <a href="{{ route('lecturers.show', $rec->lecturer) }}" class="font-medium text-telu-ink hover:text-telu-red">
-                                            {{ $rec->lecturer->name }}
+                                            {{ $rec->lecturer->full_name }}
                                         </a>
                                     </td>
 
                                     <!-- Recommended Lecturer -->
                                     <td class="px-4 py-4 align-middle">
                                         <a href="{{ route('lecturers.show', $rec->recommendedLecturer) }}" class="font-medium text-telu-ink hover:text-telu-red">
-                                            {{ $rec->recommendedLecturer->name }}
+                                            {{ $rec->recommendedLecturer->full_name }}
                                         </a>
                                         <span class="block text-xs text-telu-muted">KK: {{ $rec->recommendedLecturer->research_group }}</span>
                                     </td>

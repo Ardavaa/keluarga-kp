@@ -97,7 +97,7 @@
                         <div class="min-w-0">
                             <p class="line-clamp-2 text-sm text-telu-ink">{{ $pub->title }}</p>
                             <a href="{{ route('lecturers.show', $pub->lecturer) }}" class="mt-0.5 block text-xs text-telu-muted hover:text-telu-red">
-                                {{ $pub->lecturer->name }}
+                                {{ $pub->lecturer->full_name }}
                             </a>
                         </div>
                         <span class="shrink-0 text-xs text-telu-muted">{{ $pub->year }}</span>
@@ -119,11 +119,11 @@
                     <div class="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
                         <div class="min-w-0 text-sm">
                             <a href="{{ route('lecturers.show', $collab->lecturerOne) }}" class="font-medium text-telu-ink hover:text-telu-red">
-                                {{ $collab->lecturerOne->name }}
+                                {{ $collab->lecturerOne->full_name }}
                             </a>
                             <span class="text-telu-muted">&amp;</span>
                             <a href="{{ route('lecturers.show', $collab->lecturerTwo) }}" class="font-medium text-telu-ink hover:text-telu-red">
-                                {{ $collab->lecturerTwo->name }}
+                                {{ $collab->lecturerTwo->full_name }}
                             </a>
                         </div>
                         <span class="shrink-0 text-xs text-telu-muted">{{ $collab->collaboration_count }} publikasi</span>

@@ -13,11 +13,11 @@ class LecturerController extends Controller
 {
     /**
      * Field yang boleh dikoreksi Admin lewat panel ini — identitas,
-     * klasifikasi, dan metrik (docs/PRD.md §5). Publikasi/kolaborasi/
-     * rekomendasi individual di luar cakupan form ini.
+     * klasifikasi, dan metrik (docs/PRD.md §5). Publikasi dikelola
+     * terpisah lewat PublicationController pada form yang sama.
      */
     private const EDITABLE_FIELDS = [
-        'name',
+        'full_name',
         'name_with_title',
         'lecturer_code',
         'study_program',
@@ -35,11 +35,11 @@ class LecturerController extends Controller
 
         $lecturers = Lecturer::query()
             ->when($search !== '', fn ($query) => $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+                $q->where('full_name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%")
                     ->orWhere('lecturer_code', 'like', "%{$search}%");
             }))
-            ->orderBy('name')
+            ->orderBy('full_name')
             ->paginate(20)
             ->withQueryString();
 
@@ -49,14 +49,15 @@ class LecturerController extends Controller
     public function edit(Lecturer $lecturer): View
     {
         $overriddenFields = $lecturer->fieldOverrides()->pluck('field')->all();
+        $publications = $lecturer->publications()->orderByDesc('year')->get();
 
-        return view('admin.lecturers.edit', compact('lecturer', 'overriddenFields'));
+        return view('admin.lecturers.edit', compact('lecturer', 'overriddenFields', 'publications'));
     }
 
     public function update(Request $request, Lecturer $lecturer): RedirectResponse
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'full_name' => ['required', 'string', 'max:255'],
             'name_with_title' => ['nullable', 'string', 'max:255'],
             'lecturer_code' => ['nullable', 'string', 'max:50'],
             'study_program' => ['nullable', 'string', 'max:255'],

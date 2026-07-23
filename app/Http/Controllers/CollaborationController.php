@@ -37,7 +37,7 @@ class CollaborationController extends Controller
             foreach ([$collaboration->lecturerOne, $collaboration->lecturerTwo] as $lecturer) {
                 $nodesById[$lecturer->id] ??= [
                     'id' => $lecturer->id,
-                    'label' => $lecturer->name,
+                    'label' => $lecturer->full_name,
                     'group' => $lecturer->research_group ?: 'Lainnya',
                     'value' => 0,
                 ];

@@ -17,7 +17,6 @@ class Lecturer extends Model
     }
 
     protected $fillable = [
-        'name',
         'code',
         'lecturer_code',
         'study_program',

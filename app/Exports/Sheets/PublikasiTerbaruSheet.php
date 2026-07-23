@@ -26,7 +26,7 @@ class PublikasiTerbaruSheet implements FromCollection, WithHeadings, WithMapping
 
     public function map($publication): array
     {
-        return [$publication->lecturer->name, $publication->title, $publication->year];
+        return [$publication->lecturer->full_name, $publication->title, $publication->year];
     }
 
     public function title(): string

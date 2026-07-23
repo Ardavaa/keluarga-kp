@@ -28,53 +28,31 @@
 
             <div class="md:col-span-2">
                 <label for="prodi" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-telu-muted">Prodi</label>
-                <select id="prodi" name="prodi" class="w-full rounded-md border border-telu-border px-3.5 py-2.5 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red">
-                    <option value="">Semua Prodi</option>
-                    @foreach ($filterOptions['prodi'] as $option)
-                        <option value="{{ $option }}" @selected($prodi === $option)>{{ $option }}</option>
-                    @endforeach
-                </select>
+                <x-filter-select id="prodi" name="prodi" :options="$filterOptions['prodi']" :selected="$prodi" placeholder="Semua Prodi" />
             </div>
 
             <div class="md:col-span-2">
                 <label for="kelompok" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-telu-muted">Kelompok Keahlian</label>
-                <select id="kelompok" name="kelompok" class="w-full rounded-md border border-telu-border px-3.5 py-2.5 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red">
-                    <option value="">Semua KK</option>
-                    @foreach ($filterOptions['kelompok'] as $option)
-                        <option value="{{ $option }}" @selected($kelompok === $option)>{{ $option }}</option>
-                    @endforeach
-                </select>
+                <x-filter-select id="kelompok" name="kelompok" :options="$filterOptions['kelompok']" :selected="$kelompok" placeholder="Semua KK" />
             </div>
 
             <div class="md:col-span-2">
                 <label for="bidang" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-telu-muted">Bidang Keahlian</label>
-                <select id="bidang" name="bidang" class="w-full rounded-md border border-telu-border px-3.5 py-2.5 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red">
-                    <option value="">Semua Bidang</option>
-                    @foreach ($filterOptions['bidang'] as $option)
-                        <option value="{{ $option }}" @selected($bidang === $option)>{{ $option }}</option>
-                    @endforeach
-                </select>
+                <x-filter-select id="bidang" name="bidang" :options="$filterOptions['bidang']" :selected="$bidang" placeholder="Semua Bidang" />
             </div>
 
             <div class="md:col-span-2">
                 <label for="tahun" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-telu-muted">Tahun Publikasi</label>
-                <select id="tahun" name="tahun" class="w-full rounded-md border border-telu-border px-3.5 py-2.5 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red">
-                    <option value="">Semua Tahun</option>
-                    @foreach ($filterOptions['tahun'] as $option)
-                        <option value="{{ $option }}" @selected($tahun == $option)>{{ $option }}</option>
-                    @endforeach
-                </select>
+                <x-filter-select id="tahun" name="tahun" :options="$filterOptions['tahun']" :selected="$tahun" placeholder="Semua Tahun" />
             </div>
         </div>
 
         <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-telu-border pt-4">
             <div class="flex items-center gap-2">
                 <label for="sort" class="text-xs font-semibold uppercase tracking-wide text-telu-muted">Urutkan</label>
-                <select id="sort" name="sort" class="rounded-md border border-telu-border px-3 py-2 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red">
-                    <option value="name" @selected($sort === 'name')>Nama</option>
-                    <option value="research_group" @selected($sort === 'research_group')>Kelompok Keahlian</option>
-                    <option value="study_program" @selected($sort === 'study_program')>Prodi</option>
-                </select>
+                <div class="w-48">
+                    <x-filter-select id="sort" name="sort" :options="['full_name' => 'Nama', 'research_group' => 'Kelompok Keahlian', 'study_program' => 'Prodi']" :selected="$sort" />
+                </div>
             </div>
 
             <div class="flex items-center gap-3">

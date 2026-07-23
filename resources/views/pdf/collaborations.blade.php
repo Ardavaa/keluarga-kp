@@ -17,9 +17,9 @@
         <tbody>
             @forelse ($collaborations as $collaboration)
                 <tr>
-                    <td>{{ $collaboration->lecturerOne->name }}</td>
+                    <td>{{ $collaboration->lecturerOne->full_name }}</td>
                     <td><span class="badge">{{ $collaboration->lecturerOne->research_group }}</span></td>
-                    <td>{{ $collaboration->lecturerTwo->name }}</td>
+                    <td>{{ $collaboration->lecturerTwo->full_name }}</td>
                     <td><span class="badge">{{ $collaboration->lecturerTwo->research_group }}</span></td>
                     <td>{{ $collaboration->collaboration_count }}</td>
                 </tr>

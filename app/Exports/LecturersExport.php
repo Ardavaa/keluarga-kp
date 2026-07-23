@@ -35,7 +35,7 @@ class LecturersExport implements FromCollection, WithHeadings, WithMapping
     public function map($lecturer): array
     {
         return [
-            $lecturer->name,
+            $lecturer->full_name,
             $lecturer->lecturer_code,
             $lecturer->code,
             $lecturer->study_program,

@@ -36,7 +36,7 @@
         </thead>
         <tbody>
             @forelse ($recentPublications as $pub)
-                <tr><td>{{ $pub->lecturer->name }}</td><td>{{ $pub->title }}</td><td>{{ $pub->year }}</td></tr>
+                <tr><td>{{ $pub->lecturer->full_name }}</td><td>{{ $pub->title }}</td><td>{{ $pub->year }}</td></tr>
             @empty
                 <tr><td colspan="3">Belum ada data publikasi.</td></tr>
             @endforelse
@@ -50,7 +50,7 @@
         </thead>
         <tbody>
             @forelse ($topCollaborations as $collab)
-                <tr><td>{{ $collab->lecturerOne->name }}</td><td>{{ $collab->lecturerTwo->name }}</td><td>{{ $collab->collaboration_count }}</td></tr>
+                <tr><td>{{ $collab->lecturerOne->full_name }}</td><td>{{ $collab->lecturerTwo->full_name }}</td><td>{{ $collab->collaboration_count }}</td></tr>
             @empty
                 <tr><td colspan="3">Belum ada data kolaborasi.</td></tr>
             @endforelse

@@ -26,7 +26,7 @@ class KolaborasiTeraktifSheet implements FromCollection, WithHeadings, WithMappi
 
     public function map($collaboration): array
     {
-        return [$collaboration->lecturerOne->name, $collaboration->lecturerTwo->name, $collaboration->collaboration_count];
+        return [$collaboration->lecturerOne->full_name, $collaboration->lecturerTwo->full_name, $collaboration->collaboration_count];
     }
 
     public function title(): string

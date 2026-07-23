@@ -47,7 +47,7 @@
                     <tbody class="divide-y divide-telu-border">
                         @foreach ($lecturers as $lecturer)
                             <tr class="hover:bg-telu-bg-soft">
-                                <td class="px-4 py-3 font-medium text-telu-ink">{{ $lecturer->name }}</td>
+                                <td class="px-4 py-3 font-medium text-telu-ink">{{ $lecturer->full_name }}</td>
                                 <td class="px-4 py-3 text-telu-muted">{{ $lecturer->lecturer_code ?: '—' }}</td>
                                 <td class="px-4 py-3 text-telu-muted">{{ $lecturer->study_program ?: '—' }}</td>
                                 <td class="px-4 py-3 text-telu-muted">{{ $lecturer->research_group ?: '—' }}</td>

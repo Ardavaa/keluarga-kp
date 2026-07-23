@@ -3,7 +3,7 @@
 
 @php
     // Hitung inisial nama dosen (maksimal 2 huruf)
-    $initials = collect(explode(' ', $lecturer->name))
+    $initials = collect(explode(' ', $lecturer->full_name))
         ->take(2)
         ->map(fn($w) => strtoupper(substr($w, 0, 1)))
         ->join('');
@@ -23,17 +23,17 @@
 >
     <div class="flex items-start gap-4">
         <!-- Avatar Photo / Initial -->
-        <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-md font-semibold text-sm uppercase tracking-wide overflow-hidden {{ $avatarBg }}">
+        <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[0.625rem] font-semibold text-sm uppercase tracking-wide overflow-hidden {{ $avatarBg }}">
             @if ($lecturer->photo)
-                <img src="{{ $lecturer->photo }}" alt="{{ $lecturer->name }}" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">
+                <img src="{{ $lecturer->photo }}" alt="{{ $lecturer->full_name }}" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">
             @endif
             <span>{{ $initials }}</span>
         </div>
 
         <!-- Lecturer Identity -->
         <div class="min-w-0 flex-1">
-            <h4 class="font-semibold text-sm sm:text-base text-telu-ink group-hover:text-telu-red truncate" title="{{ $lecturer->name_with_title ?: $lecturer->name }}">
-                {{ $lecturer->name_with_title ?: $lecturer->name }}
+            <h4 class="font-semibold text-sm sm:text-base text-telu-ink group-hover:text-telu-red truncate" title="{{ $lecturer->name_with_title ?: $lecturer->full_name }}">
+                {{ $lecturer->name_with_title ?: $lecturer->full_name }}
             </h4>
             <p class="text-xs text-telu-muted mt-0.5">
                 {{ $lecturer->academic_rank ?: 'Dosen FIF' }} &middot; Kode: {{ $lecturer->lecturer_code ?: '—' }}
