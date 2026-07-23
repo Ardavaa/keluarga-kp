@@ -91,13 +91,7 @@
                 {{-- Sidebar Header --}}
                 <div class="flex h-16 items-center justify-between px-6 border-b border-telu-border/20">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
-                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-telu-red text-white shadow-sm">
-                            <span class="font-bold text-sm">FIF</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold leading-tight text-telu-ink">Research Hub</span>
-                            <span class="text-[10px] font-semibold text-telu-muted/70 tracking-wider uppercase">Telkom University</span>
-                        </div>
+                        <img src="{{ asset('images/logo-fif.png') }}" alt="Logo Fakultas Informatika" class="h-9 w-auto">
                     </a>
 
                     <button
