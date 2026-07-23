@@ -21,7 +21,7 @@
                     id="search"
                     name="search"
                     value="{{ $search }}"
-                    placeholder="Nama, bidang keahlian, atau prodi..."
+                    placeholder="Nama, kode, NIP, bidang, prodi..."
                     class="w-full rounded-md border border-telu-border px-3.5 py-2.5 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red"
                 >
             </div>

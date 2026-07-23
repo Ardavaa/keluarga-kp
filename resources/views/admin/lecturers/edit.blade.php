@@ -75,6 +75,40 @@
             @endforeach
         </div>
 
+        <hr class="my-6 border-telu-border/60">
+
+        <h3 class="mb-4 text-xs font-semibold uppercase tracking-wide text-telu-muted">Tautan Profil Akademik (SINTA, ORCID, Scopus, Google Scholar, WoS)</h3>
+        @php
+            $profilePlatforms = [
+                'sinta' => 'SINTA URL',
+                'google_scholar' => 'Google Scholar URL',
+                'scopus' => 'Scopus ID / URL',
+                'orcid' => 'ORCID URL',
+                'wos' => 'Web of Science (WoS) URL',
+            ];
+        @endphp
+
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            @foreach ($profilePlatforms as $platformKey => $platformLabel)
+                <div>
+                    <label for="profile_{{ $platformKey }}" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-telu-muted">
+                        {{ $platformLabel }}
+                    </label>
+                    <input
+                        type="text"
+                        id="profile_{{ $platformKey }}"
+                        name="profiles[{{ $platformKey }}]"
+                        value="{{ old('profiles.' . $platformKey, isset($profiles[$platformKey]) ? $profiles[$platformKey]->url : '') }}"
+                        placeholder="Masukkan URL / ID..."
+                        class="w-full rounded-md border border-telu-border px-3.5 py-2.5 text-sm text-telu-ink focus:border-telu-red focus:outline-none focus:ring-1 focus:ring-telu-red"
+                    >
+                    @error('profiles.' . $platformKey)
+                        <p class="mt-1.5 text-xs text-telu-red">{{ $message }}</p>
+                    @enderror
+                </div>
+            @endforeach
+        </div>
+
         <p class="mt-6 text-xs text-telu-muted">
             Field yang diubah akan ditandai sebagai koreksi manual dan tidak akan tertimpa saat proses import data otomatis berjalan lagi.
         </p>

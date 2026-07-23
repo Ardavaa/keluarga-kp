@@ -22,14 +22,14 @@ class LecturerOverrideTest extends TestCase
     {
         $admin = User::factory()->create();
         $lecturer = Lecturer::create([
-            'name' => 'Dosen Uji',
+            'full_name' => 'Dosen Uji',
             'code' => 'UJI-001',
             'field' => 'Data Mining',
             'academic_rank' => 'Asisten Ahli',
         ]);
 
         $response = $this->actingAs($admin)->put(route('admin.lecturers.update', $lecturer), [
-            'name' => $lecturer->name,
+            'full_name' => $lecturer->full_name,
             'name_with_title' => '',
             'lecturer_code' => '',
             'study_program' => '',
@@ -52,7 +52,7 @@ class LecturerOverrideTest extends TestCase
     public function test_import_command_skips_overridden_field_but_updates_others(): void
     {
         $lecturer = Lecturer::create([
-            'name' => 'Dosen Uji',
+            'full_name' => 'Dosen Uji',
             'code' => 'UJI-002',
             'lecturer_code' => 'UJI',
             'field' => 'Text Mining (Koreksi Manual)',

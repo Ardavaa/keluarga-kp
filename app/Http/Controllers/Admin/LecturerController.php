@@ -33,11 +33,13 @@ class LecturerController extends Controller
     {
         $search = trim((string) $request->query('search', ''));
 
+        $searchLower = mb_strtolower($search, 'UTF-8');
+
         $lecturers = Lecturer::query()
-            ->when($search !== '', fn ($query) => $query->where(function ($q) use ($search) {
-                $q->where('full_name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('lecturer_code', 'like', "%{$search}%");
+            ->when($search !== '', fn ($query) => $query->where(function ($q) use ($searchLower) {
+                $q->whereRaw('lower(full_name) like ?', ["%{$searchLower}%"])
+                    ->orWhereRaw('lower(code) like ?', ["%{$searchLower}%"])
+                    ->orWhereRaw('lower(lecturer_code) like ?', ["%{$searchLower}%"]);
             }))
             ->orderBy('full_name')
             ->paginate(20)
@@ -49,9 +51,10 @@ class LecturerController extends Controller
     public function edit(Lecturer $lecturer): View
     {
         $overriddenFields = $lecturer->fieldOverrides()->pluck('field')->all();
-        $publications = $lecturer->publications()->orderByDesc('year')->get();
+        $publications = $lecturer->publications()->orderByRaw('year DESC NULLS LAST')->get();
+        $profiles = $lecturer->profiles->keyBy('platform');
 
-        return view('admin.lecturers.edit', compact('lecturer', 'overriddenFields', 'publications'));
+        return view('admin.lecturers.edit', compact('lecturer', 'overriddenFields', 'publications', 'profiles'));
     }
 
     public function update(Request $request, Lecturer $lecturer): RedirectResponse
@@ -67,6 +70,8 @@ class LecturerController extends Controller
             'citation_count' => ['nullable', 'integer', 'min:0'],
             'h_index' => ['nullable', 'integer', 'min:0'],
             'i10_index' => ['nullable', 'integer', 'min:0'],
+            'profiles' => ['nullable', 'array'],
+            'profiles.*' => ['nullable', 'string', 'max:1000'],
         ]);
 
         // Kolom ini NOT NULL dengan default 0 di skema (bukan nullable) —
@@ -89,6 +94,32 @@ class LecturerController extends Controller
                 'lecturer_id' => $lecturer->id,
                 'field' => $fieldName,
             ]);
+        }
+
+        $profileUpdated = false;
+        if ($request->has('profiles')) {
+            foreach ($request->input('profiles', []) as $platform => $url) {
+                $trimmedUrl = trim((string) $url);
+                if ($trimmedUrl !== '') {
+                    $existing = $lecturer->profiles()->where('platform', $platform)->first();
+                    if (! $existing || $existing->url !== $trimmedUrl) {
+                        $profileUpdated = true;
+                    }
+                    $lecturer->profiles()->updateOrCreate(
+                        ['platform' => $platform],
+                        ['url' => $trimmedUrl]
+                    );
+                } else {
+                    $deleted = $lecturer->profiles()->where('platform', $platform)->delete();
+                    if ($deleted > 0) {
+                        $profileUpdated = true;
+                    }
+                }
+            }
+        }
+
+        if ($profileUpdated) {
+            $changedFields[] = 'profil & tautan';
         }
 
         $message = $changedFields === []

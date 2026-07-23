@@ -9,7 +9,45 @@
         'google_scholar' => 'Google Scholar',
         'scopus' => 'Scopus',
         'orcid' => 'ORCID',
+        'wos' => 'Web of Science',
     ];
+
+    $translateReason = function($reason) {
+        if (str_starts_with($reason, 'Fellow members of the ')) {
+            $group = str_replace(['Fellow members of the ', ' Research Group'], '', $reason);
+            return 'Sama-sama anggota Kelompok Keahlian ' . $group;
+        }
+        if (str_starts_with($reason, 'Cross-disciplinary potential: connecting ')) {
+            $groups = str_replace('Cross-disciplinary potential: connecting ', '', $reason);
+            return 'Potensi lintas disiplin: menghubungkan ' . str_replace(' and ', ' dan ', $groups);
+        }
+        if (str_starts_with($reason, 'Both specialize in ')) {
+            $field = str_replace('Both specialize in ', '', $reason);
+            return 'Sama-sama memiliki keahlian di bidang ' . $field;
+        }
+        if (str_starts_with($reason, 'Shared research themes: ')) {
+            $themes = str_replace('Shared research themes: ', '', $reason);
+            return 'Tema penelitian bersama: ' . $themes;
+        }
+        if (str_starts_with($reason, 'Very high publication topic overlap ')) {
+            $sim = str_replace('Very high publication topic overlap (similarity: ', '', $reason);
+            $sim = rtrim($sim, ')');
+            return 'Tingkat kesamaan topik publikasi sangat tinggi (kemiripan: ' . $sim . ')';
+        }
+        if (str_starts_with($reason, 'Moderate publication theme match ')) {
+            $sim = str_replace('Moderate publication theme match (similarity: ', '', $reason);
+            $sim = rtrim($sim, ')');
+            return 'Kesesuaian tema publikasi sedang (kemiripan: ' . $sim . ')';
+        }
+        if ($reason === 'Have previously co-authored research papers together') {
+            return 'Pernah menulis artikel ilmiah bersama sebelumnya';
+        }
+        if (str_starts_with($reason, 'Both have collaborated with shared co-authors: ')) {
+            $authors = str_replace('Both have collaborated with shared co-authors: ', '', $reason);
+            return 'Sama-sama pernah berkolaborasi dengan penulis yang sama: ' . $authors;
+        }
+        return $reason;
+    };
 @endphp
 
 @section('content')
@@ -94,27 +132,64 @@
     @if ($lecturer->recommendationsGiven->isNotEmpty())
         <div class="mt-8">
             <h2 class="text-sm font-semibold uppercase tracking-wide text-telu-muted">Rekomendasi Partner Kolaborasi</h2>
-            <div class="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                @foreach ($lecturer->recommendationsGiven as $rec)
+            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach ($lecturer->recommendationsGiven->take(10) as $rec)
                     @php
                         $partner = $rec->recommendedLecturer;
+                        $partnerInitials = collect(explode(' ', $partner->full_name))
+                            ->take(2)
+                            ->map(fn($w) => strtoupper(substr($w, 0, 1)))
+                            ->join('');
+                        $partnerGroup = strtoupper(trim((string) $partner->research_group));
+                        $partnerAvatarBg = match ($partnerGroup) {
+                            'CITI' => 'bg-rg-citi/10 text-rg-citi border border-rg-citi/20',
+                            'DSIS' => 'bg-rg-dsis/10 text-rg-dsis border border-rg-dsis/20',
+                            'SEAL' => 'bg-rg-seal/10 text-rg-seal border border-rg-seal/20',
+                            default => 'bg-telu-bg-soft text-telu-muted border border-telu-border/40',
+                        };
                     @endphp
                     <a
                         href="{{ route('lecturers.show', $partner) }}"
-                        class="group card-premium block p-4 hover:border-telu-red/50"
+                        class="group card-premium block p-5 hover:border-telu-red/50"
                     >
-                        <div class="flex items-start justify-between gap-3">
-                            <h4 class="font-semibold text-sm text-telu-ink group-hover:text-telu-red truncate">
-                                {{ $partner->name_with_title ?: $partner->full_name }}
-                            </h4>
-                            <span class="shrink-0 text-sm font-semibold text-telu-red">{{ number_format($rec->score, 2) }}</span>
+                        <div class="flex items-start gap-4">
+                            <!-- Partner Photo / Avatar -->
+                            <div class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-[0.625rem] font-semibold text-sm uppercase tracking-wide overflow-hidden {{ $partnerAvatarBg }}">
+                                @if ($partner->photo)
+                                    <img src="{{ $partner->photo }}" alt="{{ $partner->full_name }}" class="absolute inset-0 h-full w-full object-cover" onerror="this.remove()">
+                                @endif
+                                <span>{{ $partnerInitials }}</span>
+                            </div>
+
+                            <!-- Partner Details -->
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-start justify-between gap-3">
+                                    <h4 class="font-semibold text-sm sm:text-base text-telu-ink group-hover:text-telu-red truncate" title="{{ $partner->name_with_title ?: $partner->full_name }}">
+                                        {{ $partner->name_with_title ?: $partner->full_name }}
+                                    </h4>
+                                    <span class="shrink-0 text-sm font-semibold text-telu-red bg-telu-red/5 px-2 py-0.5 rounded-full" title="Skor kecocokan">
+                                        {{ number_format($rec->score * 100, 2) }}%
+                                    </span>
+                                </div>
+                                <p class="text-xs text-telu-muted mt-0.5">
+                                    {{ $partner->academic_rank ?: 'Dosen FIF' }} &middot; Kode: {{ $partner->lecturer_code ?: '—' }}
+                                </p>
+                                <p class="text-xs text-telu-body mt-2 truncate" title="{{ $partner->field ?: 'Umum' }}">
+                                    Bidang: <span class="text-telu-ink font-medium">{{ $partner->field ?: 'Umum' }}</span>
+                                </p>
+                                <div class="mt-3 flex items-center justify-between text-xs text-telu-muted border-t border-telu-border/50 pt-2">
+                                    <span class="truncate max-w-[150px]" title="{{ $partner->study_program }}">{{ $partner->study_program ?: 'FIF Tel-U' }}</span>
+                                    <x-research-group-badge :group="$partner->research_group" />
+                                </div>
+                            </div>
                         </div>
-                        <p class="mt-0.5 text-xs text-telu-muted">Skor kecocokan</p>
+
+                        <!-- Reasons for recommendation -->
                         @if (!empty($rec->reasons))
-                            <div class="mt-2 flex flex-wrap gap-1">
-                                @foreach (array_slice($rec->reasons, 0, 2) as $reason)
-                                    <span class="inline-flex items-center rounded bg-telu-bg-soft-2 px-1.5 py-0.5 text-[11px] text-telu-body">
-                                        {{ $reason }}
+                            <div class="mt-4 flex flex-wrap gap-1.5 border-t border-dashed border-telu-border pt-3">
+                                @foreach (array_slice($rec->reasons, 0, 3) as $reason)
+                                    <span class="inline-flex items-center rounded bg-telu-bg-soft-2 px-2 py-0.5 text-[10px] text-telu-body font-medium">
+                                        {{ $translateReason($reason) }}
                                     </span>
                                 @endforeach
                             </div>

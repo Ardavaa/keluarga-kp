@@ -31,7 +31,7 @@ class LecturerController extends Controller
     public function show(Lecturer $lecturer)
     {
         $lecturer->load([
-            'publications' => fn ($query) => $query->orderByDesc('year'),
+            'publications' => fn ($query) => $query->orderByRaw('year DESC NULLS LAST'),
             'keywords',
             'researchInterests',
             'profiles',
@@ -81,7 +81,9 @@ class LecturerController extends Controller
                 $query->where(function ($q) use ($searchLower) {
                     $q->whereRaw('lower(full_name) like ?', ["%{$searchLower}%"])
                         ->orWhereRaw('lower(field) like ?', ["%{$searchLower}%"])
-                        ->orWhereRaw('lower(study_program) like ?', ["%{$searchLower}%"]);
+                        ->orWhereRaw('lower(study_program) like ?', ["%{$searchLower}%"])
+                        ->orWhereRaw('lower(lecturer_code) like ?', ["%{$searchLower}%"])
+                        ->orWhereRaw('lower(code) like ?', ["%{$searchLower}%"]);
                 });
             })
             ->when($prodi !== '', fn ($query) => $query->where('study_program', $prodi))

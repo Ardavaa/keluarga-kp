@@ -59,7 +59,7 @@ class DashboardController extends Controller
             ->toArray();
 
         $recentPublications = Publication::with('lecturer')
-            ->orderBy('year', 'desc')
+            ->orderByRaw('year DESC NULLS LAST')
             ->orderBy('id', 'desc')
             ->limit(5)
             ->get();
